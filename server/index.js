@@ -39,8 +39,8 @@ function requestBudget(max) {
   };
 }
 
-function createApp({ integrations = createIntegrations(), app = express() } = {}) {
-  const guard = createTradingGuard({ ownerPin: process.env.OWNER_PIN });
+function createApp({ integrations = createIntegrations(), app = express(), ownerPin = process.env.OWNER_PIN } = {}) {
+  const guard = createTradingGuard({ ownerPin });
   const paperAccount = { cashCents: 1_000_000, positions: Object.create(null) };
   const paperPrices = { 'BTC-USDT': 97240, 'ETH-USDT': 3450 }; // Fixed fixtures; no live market feed.
   const allowGuardControl = requestBudget(12);
