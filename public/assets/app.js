@@ -35,6 +35,7 @@ function demoForm(id, onSubmit) {
       button.disabled = false;
     }
   });
+  button.disabled = false;
 }
 
 function setValues(container, values) {
@@ -53,10 +54,12 @@ demoForm('vibe', async (fields, result) => {
   else body.useAI = true;
   const data = await request('/api/vibe', body);
 
-  const source = mode ? 'Manually selected mode' : data.source === 'ai' ? 'AI-selected mode' : 'Rule-based demo mode';
+  const source = mode ? 'Manually selected mode'
+    : data.source === 'ai' ? 'AI-selected mode (' + data.provider + ')' : 'Rule-based demo mode';
   setValues(result, { mode: data.mode, feeling: data.feeling, source, reason: data.reason || '' });
   for (const [asset, percent] of Object.entries(data.portfolio)) {
     setValues(result, { [asset]: percent + '%' });
+    result.querySelector('[data-meter="' + asset + '"]').value = percent;
   }
 });
 
@@ -125,13 +128,48 @@ demoForm('sandbox', async (fields, result) => {
   result.querySelector('#sandbox-approval').href = data.approvalUrl;
 });
 
+const idea = document.getElementById('feeling');
+for (const button of document.querySelectorAll('[data-prompt]')) {
+  button.addEventListener('click', () => {
+    idea.value = button.dataset.prompt;
+    idea.focus();
+  });
+}
+
+const integrationStatus = document.getElementById('integration-status');
+if (integrationStatus) {
+  fetch('/api/demo/status').then(response => {
+    if (!response.ok) throw new Error('Demo status unavailable');
+    return response.json();
+  }).then(status => {
+    const ai = status.runtimeAi ? 'AI provider configured' : 'Rule-based portfolio demo';
+    const paypal = status.paypalSandbox ? 'PayPal Sandbox configured' : 'PayPal Sandbox setup required';
+    integrationStatus.textContent = ai + ' · ' + paypal;
+    integrationStatus.hidden = false;
+  }).catch(() => {});
+}
+
 const sandboxReturn = document.getElementById('sandbox-return');
 if (sandboxReturn) {
-  const sandbox = new URLSearchParams(location.search).get('sandbox');
+  const params = new URLSearchParams(location.search);
+  const sandbox = params.get('sandbox');
   if (sandbox === 'returned' || sandbox === 'cancelled') {
-    sandboxReturn.textContent = sandbox === 'returned'
-      ? 'Returned from PayPal Sandbox. This demo does not authorize or capture payments.'
-      : 'The PayPal Sandbox preview was cancelled.';
+    history.replaceState(null, '', '/#sandbox-checkout');
+    document.getElementById('sandbox-checkout').scrollIntoView();
     sandboxReturn.hidden = false;
+    if (sandbox === 'cancelled') {
+      sandboxReturn.textContent = 'The PayPal Sandbox preview was cancelled.';
+    } else {
+      sandboxReturn.textContent = 'Checking the returned order with PayPal Sandbox…';
+      request('/api/paypal/sandbox/verify', { orderId: params.get('token'), state: params.get('state') })
+        .then(order => {
+          sandboxReturn.textContent = 'PayPal Sandbox verified order ' + order.orderId + ' · '
+            + order.status + ' · USD $' + order.amount.value + '.';
+        })
+        .catch(error => {
+          sandboxReturn.dataset.error = '';
+          sandboxReturn.textContent = error.message;
+        });
+    }
   }
 }

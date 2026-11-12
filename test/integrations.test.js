@@ -73,7 +73,10 @@ test('checkout creates a fixed $1 PayPal Sandbox order and performs no authoriza
       assert.equal(body.intent, 'AUTHORIZE');
       assert.deepEqual(body.purchase_units[0].amount, { currency_code: 'USD', value: '1.00' });
       assert.match(options.headers['PayPal-Request-Id'], /^[0-9a-f-]{36}$/);
-      assert.equal(body.payment_source.paypal.experience_context.return_url, 'https://demo.example/?sandbox=returned#sandbox-checkout');
+      const returnUrl = new URL(body.payment_source.paypal.experience_context.return_url);
+      assert.equal(returnUrl.origin, 'https://demo.example');
+      assert.equal(returnUrl.searchParams.get('sandbox'), 'returned');
+      assert.ok(returnUrl.searchParams.get('state').startsWith(body.purchase_units[0].custom_id + '.'));
       return Response.json({ id: 'TEST-ORDER', links: [{ rel: 'payer-action', href: 'https://www.sandbox.paypal.com/checkoutnow?token=TEST-ORDER' }] });
     },
   });
@@ -167,5 +170,52 @@ test('PayPal verification route forwards the real provider status and enforces t
       id: 'TEST-ORDER', status: 'PAYER_ACTION_REQUIRED', mode: 'sandbox',
       approvalUrl: 'https://www.sandbox.paypal.com/checkoutnow?token=TEST-ORDER',
     });
+  });
+});
+
+test('PayPal return verifies the app order without authorizing or exposing buyer data', async () => {
+  const orderId = 'SB1234';
+  let returnState;
+  let nonce;
+  let reads = 0;
+  let differentOrder = false;
+  const integrations = createIntegrations({
+    env: { PAYPAL_CLIENT_ID: 'test-id', PAYPAL_CLIENT_SECRET: 'test-secret', APP_URL: 'https://demo.example' },
+    request: async (url, options) => {
+      if (url.endsWith('/token')) return Response.json({ access_token: 'test-token' });
+      if (options.method === 'POST') {
+        const body = JSON.parse(options.body);
+        nonce = body.purchase_units[0].custom_id;
+        returnState = new URL(body.payment_source.paypal.experience_context.return_url).searchParams.get('state');
+        return Response.json({ id: orderId, links: [{ rel: 'approve', href: 'https://www.sandbox.paypal.com/checkoutnow?token=SB1234' }] });
+      }
+      assert.equal(options.method, 'GET');
+      assert.equal(url, 'https://api-m.sandbox.paypal.com/v2/checkout/orders/' + orderId);
+      reads++;
+      return Response.json({
+        id: orderId,
+        intent: 'AUTHORIZE',
+        status: 'APPROVED',
+        purchase_units: [{ custom_id: differentOrder ? 'different' : nonce, amount: { currency_code: 'USD', value: '1.00' } }],
+        payer: { email_address: 'buyer@example.invalid' },
+      });
+    },
+  });
+
+  await withApp(integrations, async post => {
+    assert.equal((await post('paypal/sandbox/order', {})).status, 201);
+    assert.equal((await post('paypal/sandbox/verify', { orderId, state: 'tampered' })).status, 400);
+    assert.equal((await post('paypal/sandbox/verify', { orderId: '../wrong', state: returnState })).status, 400);
+    assert.equal(reads, 0);
+
+    const verified = await post('paypal/sandbox/verify', { orderId, state: returnState });
+    assert.equal(verified.status, 200);
+    assert.deepEqual(await verified.json(), {
+      mode: 'sandbox', orderId, status: 'APPROVED', amount: { currency_code: 'USD', value: '1.00' },
+    });
+    assert.equal(reads, 1);
+
+    differentOrder = true;
+    assert.equal((await post('paypal/sandbox/verify', { orderId, state: returnState })).status, 422);
   });
 });

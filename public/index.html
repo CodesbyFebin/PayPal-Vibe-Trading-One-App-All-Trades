@@ -22,17 +22,32 @@
     </nav>
   </header>
   <main class="shell">
-    <section class="hero">
-      <p class="eyebrow">PayPal AI Hackathon</p>
-      <h1>One Vibe. Every Trade.</h1>
-      <p>Type how you feel and preview a sample allocation across Indian equities, US equities, crypto, and PYUSD.</p>
+    <section class="hero hero-feature">
+      <div class="hero-copy">
+        <p class="eyebrow">PayPal AI Hackathon</p>
+        <h1>One Vibe. Every Trade.</h1>
+        <p>Turn a market idea into an illustrative allocation, test the strategy, and preview a $1 PayPal Sandbox checkout.</p>
+        <a class="button" href="#vibe-it">Preview an allocation</a>
+      </div>
+      <img class="hero-art" src="/assets/vibe-mascot.webp" width="1120" height="625" alt="">
     </section>
+    <nav class="journey" aria-label="Demo walkthrough">
+      <a href="#vibe-it"><strong>Choose a vibe</strong><span>Explore an allocation</span></a>
+      <a href="/webapp/"><strong>Test the strategy</strong><span>See a sample equity curve</span></a>
+      <a href="#sandbox-checkout"><strong>Preview checkout</strong><span>Open PayPal Sandbox</span></a>
+    </nav>
+    <p id="integration-status" class="integration-status" hidden aria-live="polite"></p>
     <section class="panel" id="vibe-it" aria-labelledby="vibe-heading">
       <h2 id="vibe-heading">Vibe It</h2>
       <form id="vibe">
         <label for="feeling">Your market idea</label>
         <input id="feeling" name="feeling" value="I feel bullish on AI" maxlength="240" aria-describedby="vibe-hint">
-        <small id="vibe-hint">Use the sample prompt or enter your own. With “From prompt,” the configured AI provider may receive your idea. Avoid personal information.</small>
+        <small id="vibe-hint">With “From prompt,” the configured AI provider may receive your idea. Avoid personal information.</small>
+        <div class="prompt-examples" aria-label="Example ideas">
+          <button type="button" data-prompt="I want to play it safe">Lower risk</button>
+          <button type="button" data-prompt="I am curious about a diversified portfolio">Diversified</button>
+          <button type="button" data-prompt="I feel bullish on AI">Bullish on AI</button>
+        </div>
         <fieldset>
           <legend>Portfolio approach</legend>
           <div class="choices">
@@ -42,7 +57,7 @@
             <label><input type="radio" name="mode" value="Bold"> Bold</label>
           </div>
         </fieldset>
-        <button type="submit">Preview portfolio</button>
+        <button type="submit" disabled>Preview portfolio</button>
       </form>
       <p id="vibe-status" class="feedback" role="status"></p>
       <div id="vibe-result" class="result" hidden>
@@ -50,22 +65,24 @@
         <p data-value="feeling"></p>
         <p class="muted" data-value="source"></p>
         <p data-value="reason"></p>
-        <dl class="metrics">
-          <div><dt>US equities</dt><dd data-value="US"></dd></div>
-          <div><dt>Indian equities</dt><dd data-value="NSE"></dd></div>
-          <div><dt>Crypto</dt><dd data-value="Crypto"></dd></div>
-          <div><dt>PYUSD</dt><dd data-value="PYUSD"></dd></div>
+        <dl class="metrics allocation">
+          <div><dt>US equities</dt><dd><span data-value="US"></span><meter data-meter="US" min="0" max="100" value="0" aria-label="US equities allocation"></meter></dd></div>
+          <div><dt>Indian equities</dt><dd><span data-value="NSE"></span><meter data-meter="NSE" min="0" max="100" value="0" aria-label="Indian equities allocation"></meter></dd></div>
+          <div><dt>Crypto</dt><dd><span data-value="Crypto"></span><meter data-meter="Crypto" min="0" max="100" value="0" aria-label="Crypto allocation"></meter></dd></div>
+          <div><dt>PYUSD</dt><dd><span data-value="PYUSD"></span><meter data-meter="PYUSD" min="0" max="100" value="0" aria-label="PYUSD allocation"></meter></dd></div>
         </dl>
-        <a href="/webapp/">Continue to the Backtest Lab</a>
-        <p><a href="#sandbox-checkout">Try the $1 PayPal Sandbox checkout</a></p>
+        <div class="result-links">
+          <a href="/webapp/">Continue to the Backtest Lab</a>
+          <a href="#sandbox-checkout">Try the $1 PayPal Sandbox checkout</a>
+        </div>
       </div>
     </section>
     <section class="panel" id="sandbox-checkout" aria-labelledby="checkout-heading">
       <h2 id="checkout-heading">$1 PayPal Sandbox checkout</h2>
       <p>Create a USD $1 test order and open PayPal Sandbox. This demo creates the order and lets you preview buyer approval. It does not authorize or capture a payment.</p>
-      <p id="sandbox-return" class="muted" hidden></p>
+      <p id="sandbox-return" class="feedback" role="status" hidden></p>
       <form id="sandbox">
-        <button type="submit">Create sandbox order</button>
+        <button type="submit" disabled>Create sandbox order</button>
       </form>
       <p id="sandbox-status" class="feedback" role="status"></p>
       <div id="sandbox-result" class="result" hidden>

@@ -47,7 +47,7 @@ The PayPal Orders flow and OpenAI-compatible Chat Completions client are adapted
 1. Copy `.env.example` to `.env`. Set `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` from a PayPal **Sandbox** application and set either `GEMINI_API_KEY` or `OPENAI_API_KEY`. For a custom OpenAI-compatible provider, use `AI_API_KEY`, `AI_BASE_URL`, and `AI_MODEL`. If both named keys are configured, Gemini takes priority. Keep credentials server-side.
 2. Run `npm ci`, then `node --env-file=.env server/index.js`. On a hosted instance, set `APP_URL` to the application's HTTPS origin and supply credentials through the host's environment settings.
 3. Open [Vibe It](http://localhost:3000/), keep **From prompt** selected, and preview a portfolio. **AI-selected mode** means the configured model returned a recognized mode. **Rule-based demo mode** means the fallback supplied it.
-4. Choose **Try the $1 PayPal Sandbox checkout**, then **Create sandbox order**. The server creates a fixed USD $1 order against the Sandbox Orders API. Use **Open PayPal Sandbox** to preview the buyer approval screen with a sandbox buyer account. This app does not authorize or capture the order.
+4. Choose **Try the $1 PayPal Sandbox checkout**, then **Create sandbox order**. The server creates a fixed USD $1 order against the Sandbox Orders API. Open PayPal Sandbox using a sandbox buyer account. On return, the app verifies the signed checkout state and reads the matching order status from PayPal. The app never authorizes or captures the order.
 
 For direct live verification after loading the private `.env`:
 
