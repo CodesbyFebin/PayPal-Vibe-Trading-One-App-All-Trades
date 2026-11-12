@@ -1,1 +1,63 @@
-<!doctype html><html><head><meta charset="utf-8"><title>PayPal Vibe — One App. All Trades.</title><style>body{font-family:system-ui;background:#EAF2FF;color:#003087;padding:24px}.card{background:#fff;border-radius:16px;padding:16px;margin:12px 0}button{background:#FFC439;border:0;padding:12px 18px;border-radius:12px;font-weight:700}input{padding:12px;width:80%;border-radius:12px;border:1px solid #ccc}pre{background:#0B1B3A;color:#7CFF8A;padding:12px;border-radius:12px}</style></head><body><h1>PayPal Vibe — One App. All Trades.</h1><p>One Pal. Every Vibe. Every Payment. Every Trade. $1 start.</p><div class="card"><h2>Vibe It</h2><input id="v" placeholder="I feel bullish on AI..."><br><br><button onclick="go()">Vibe It</button><pre id="out">POST /api/vibe</pre></div><div class="card"><p><a href="/landing/">Landing</a> • <a href="/mobile/">Mobile</a> • Chat Agent • Backtest • Alpha Zoo • Options • Paper Trading</p></div><script>async function go(){let v=document.getElementById('v').value||"I feel bullish on AI";let r=await fetch('/api/vibe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({feeling:v})});document.getElementById('out').innerText=JSON.stringify(await r.json(),null,2)}</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="PayPal Vibe Trading, a simulated trading workflow built for the PayPal AI Hackathon.">
+  <title>Vibe It | PayPal Vibe Trading</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/vibe-icon.svg">
+  <link rel="stylesheet" href="/assets/app.css">
+  <script src="/assets/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="shell nav" aria-label="Main">
+      <a class="brand" href="/"><span class="mark" aria-hidden="true">V</span> PayPal Vibe Trading</a>
+      <div class="nav-links">
+          <a href="/" aria-current="page">Vibe It</a>
+          <a href="/landing/">Overview</a>
+          <a href="/webapp/">Web App</a>
+          <a href="/mobile/">Mobile</a>
+      </div>
+    </nav>
+  </header>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">PayPal AI Hackathon</p>
+      <h1>One Vibe. Every Trade.</h1>
+      <p>Type how you feel and preview a sample allocation across Indian equities, US equities, crypto, and PYUSD.</p>
+    </section>
+    <section class="panel" id="vibe-it" aria-labelledby="vibe-heading">
+      <h2 id="vibe-heading">Vibe It</h2>
+      <form id="vibe">
+        <label for="feeling">Your market idea</label>
+        <input id="feeling" name="feeling" value="I feel bullish on AI" maxlength="240" aria-describedby="vibe-hint">
+        <small id="vibe-hint">Use the sample prompt or enter your own.</small>
+        <fieldset>
+          <legend>Portfolio approach</legend>
+          <div class="choices">
+            <label><input type="radio" name="mode" value="" checked> From prompt</label>
+            <label><input type="radio" name="mode" value="Safe"> Safe</label>
+            <label><input type="radio" name="mode" value="Balanced"> Balanced</label>
+            <label><input type="radio" name="mode" value="Bold"> Bold</label>
+          </div>
+        </fieldset>
+        <button type="submit">Preview portfolio</button>
+      </form>
+      <p id="vibe-status" class="feedback" role="status"></p>
+      <div id="vibe-result" class="result" hidden>
+        <h2><span data-value="mode"></span> sample allocation</h2>
+        <p data-value="feeling"></p>
+        <dl class="metrics">
+          <div><dt>US equities</dt><dd data-value="US"></dd></div>
+          <div><dt>Indian equities</dt><dd data-value="NSE"></dd></div>
+          <div><dt>Crypto</dt><dd data-value="Crypto"></dd></div>
+          <div><dt>PYUSD</dt><dd data-value="PYUSD"></dd></div>
+        </dl>
+        <a href="/webapp/">Continue to the Backtest Lab</a>
+      </div>
+    </section>
+  </main>
+  <footer class="shell">Hackathon concept demo. Sample data only. No real trades, payments, or financial advice.</footer>
+</body>
+</html>
