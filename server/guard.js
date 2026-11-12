@@ -72,6 +72,14 @@ function createTradingGuard({ ownerPin = process.env.OWNER_PIN, now = () => new 
     return event;
   }
 
+  function resetDailyWindow() {
+    const today = now().toISOString().slice(0, 10);
+    if (today !== day) {
+      day = today;
+      dailyNotional = 0;
+    }
+  }
+
   function verifyMandate() {
     return verify(
       null,
@@ -129,6 +137,7 @@ function createTradingGuard({ ownerPin = process.env.OWNER_PIN, now = () => new 
   }
 
   function evaluate(input = {}) {
+    resetDailyWindow();
     const trade = normalizeTrade(input);
     const notional = trade.qty * trade.price;
     const reasons = [];
@@ -189,15 +198,13 @@ function createTradingGuard({ ownerPin = process.env.OWNER_PIN, now = () => new 
   }
 
   function recordFill(trade) {
-    const today = now().toISOString().slice(0, 10);
-    if (today !== day) { day = today; dailyNotional = 0; }
+    resetDailyWindow();
     dailyNotional += trade.notional;
     appendEvent('paper.fill.recorded', { action: trade.action, symbol: trade.symbol, qty: trade.qty, notional: trade.notional });
   }
 
   function getStatus() {
-    const today = now().toISOString().slice(0, 10);
-    if (today !== day) { day = today; dailyNotional = 0; }
+    resetDailyWindow();
     return {
       mode: 'paper-only',
       killSwitch,
