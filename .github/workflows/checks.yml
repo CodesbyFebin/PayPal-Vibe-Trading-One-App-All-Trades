@@ -2,7 +2,7 @@ name: Demo checks
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'feat/**']
   pull_request:
 
 permissions:
@@ -18,4 +18,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - run: node --check server/index.js
+      - run: node --check server/guard.js
+      - run: node --check public/assets/app.js
       - run: npm test
