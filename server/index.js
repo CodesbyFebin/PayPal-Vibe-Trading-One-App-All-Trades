@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('node:path');
 const { createIntegrations } = require('./integrations');
 const { createTradingGuard } = require('./guard');
+const { runMovingAverageBacktest } = require('./strategy-engine');
 
 const root = path.join(__dirname, '..');
 const allocations = {
@@ -204,6 +205,21 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
     // Scale the supplied sample curve. No market data is fetched.
     const equity = [1000, 1184, 1120, 1340, 1280].map(value => Math.round(value * capital / 10) / 100);
     res.json({ symbol, strategy, returnPct: 24.6, sharpe: 1.72, maxDD: -11.2, winRate: 57, trades: 42, equity });
+  });
+
+  app.post('/api/backtest/historical', (req, res) => {
+    const symbol = textField(req.body.symbol, 'CUSTOM', 32);
+    const prices = req.body.prices;
+    const capital = positiveNumber(req.body.capital, 1000);
+    const fast = req.body.fast === undefined ? 20 : Number(req.body.fast);
+    const slow = req.body.slow === undefined ? 50 : Number(req.body.slow);
+    const feeBps = req.body.feeBps === undefined ? 10 : Number(req.body.feeBps);
+    try {
+      const result = runMovingAverageBacktest({ prices, capital, fast, slow, feeBps });
+      res.json({ symbol, ...result });
+    } catch (error) {
+      res.status(400).json({ error: error.message || 'Historical backtest input is invalid.' });
+    }
   });
 
   app.get('/api/portfolio', (req, res) => {
