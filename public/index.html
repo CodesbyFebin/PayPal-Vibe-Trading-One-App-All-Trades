@@ -37,7 +37,12 @@
       <a href="#sandbox-checkout"><strong>Preview checkout</strong><span>Test Braintree Sandbox</span></a>
     </nav>
     <p id="integration-status" class="integration-status" hidden aria-live="polite"></p>
-    <section class="panel" id="market-prices" aria-labelledby="market-heading">\n      <h2 id="market-heading">Live market reference</h2>\n      <p id="market-prices-status" class="feedback" role="status">Connecting to read-only market data…</p>\n      <div id="market-price-cards" class="grid"></div>\n    </section>\n    <section class="panel" id="vibe-it" aria-labelledby="vibe-heading">
+    <section class="panel" id="market-prices" aria-labelledby="market-heading">
+      <h2 id="market-heading">Live market reference</h2>
+      <p id="market-prices-status" class="feedback" role="status">Connecting to read-only market data…</p>
+      <div id="market-price-cards" class="grid"></div>
+    </section>
+    <section class="panel" id="vibe-it" aria-labelledby="vibe-heading">
       <h2 id="vibe-heading">Vibe It</h2>
       <form id="vibe">
         <label for="feeling">Your market idea</label>
@@ -64,7 +69,8 @@
         <h2><span data-value="mode"></span> sample allocation</h2>
         <p data-value="feeling"></p>
         <p class="muted" data-value="source"></p>
-        <p data-value="reason"></p>\n        <p class="muted" data-value="market"></p>
+        <p data-value="reason"></p>
+        <p class="muted" data-value="market"></p>
         <dl class="metrics allocation">
           <div><dt>US equities</dt><dd><span data-value="US"></span><meter data-meter="US" min="0" max="100" value="0" aria-label="US equities allocation"></meter></dd></div>
           <div><dt>Indian equities</dt><dd><span data-value="NSE"></span><meter data-meter="NSE" min="0" max="100" value="0" aria-label="Indian equities allocation"></meter></dd></div>
