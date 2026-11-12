@@ -205,6 +205,42 @@ test('owner kill switch freezes paper execution and requires authenticated contr
   }
 });
 
+test('PayPal Sandbox verification is IP rate-limited before provider work', async () => {
+  let verifications = 0;
+  const integrations = {
+    paypalConfigured: true,
+    parseReturnState: () => 'verified-nonce',
+    verifySandboxOrder: async () => {
+      verifications++;
+      return { status: 'COMPLETED', mode: 'sandbox' };
+    },
+  };
+  const app = createApp({ integrations });
+  const local = app.listen(0, '127.0.0.1');
+  await once(local, 'listening');
+  const base = 'http://127.0.0.1:' + local.address().port;
+  try {
+    for (let i = 0; i < 12; i++) {
+      const response = await fetch(base + '/api/paypal/sandbox/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: 'SANDBOX123', state: 'signed-state' }),
+      });
+      assert.equal(response.status, 200, 'request ' + (i + 1));
+    }
+    const limited = await fetch(base + '/api/paypal/sandbox/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId: 'SANDBOX123', state: 'signed-state' }),
+    });
+    assert.equal(limited.status, 429);
+    assert.match(limited.headers.get('ratelimit'), /limit=12/);
+    assert.equal(verifications, 12, 'the rejected request must not call PayPal');
+  } finally {
+    await new Promise(resolve => local.close(resolve));
+  }
+});
+
 test('invalid input and malformed JSON receive structured errors', async () => {
   for (const [route, body] of [
     ['vibe', { feeling: 42 }], ['vibe', { mode: ['Safe'] }], ['vibe', []],
