@@ -22,3 +22,5 @@ jobs:
       - run: node --check server/guard.js
       - run: node --check public/assets/app.js
       - run: npm test
+      - name: Build container image
+        run: docker build --tag paypal-vibe-trading:ci .

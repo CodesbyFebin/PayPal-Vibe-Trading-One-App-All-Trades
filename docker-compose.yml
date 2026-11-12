@@ -1,0 +1,23 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      BRAINTREE_ENV: ${BRAINTREE_ENV:-sandbox}
+      BRAINTREE_MERCHANT_ID: ${BRAINTREE_MERCHANT_ID:-}
+      BRAINTREE_PUBLIC_KEY: ${BRAINTREE_PUBLIC_KEY:-}
+      BRAINTREE_PRIVATE_KEY: ${BRAINTREE_PRIVATE_KEY:-}
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_BASE_URL: ${AI_BASE_URL:-https://api.openai.com/v1}
+      AI_MODEL: ${AI_MODEL:-gpt-4o-mini}
+      OWNER_PIN: ${OWNER_PIN:-}
+    restart: unless-stopped

@@ -1,5 +1,7 @@
 # PayPal Vibe Trading
 
+[![Demo checks](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/actions/workflows/checks.yml/badge.svg)](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/actions/workflows/checks.yml) [![License](https://img.shields.io/github/license/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades)](LICENSE)
+
 **One Vibe. Every Trade.** An AI-guided portfolio sandbox with an AgentPaL-style trust layer: model-assisted risk-style selection, signed paper-trading mandates, deterministic order policy, owner approvals, emergency freeze, and a tamper-evident audit journal. Braintree Sandbox provides the PayPal-ecosystem checkout path.
 
 ## Run locally
@@ -119,3 +121,20 @@ Automated tests exercise the app with simulated upstream responses and check the
 ## Demo boundaries
 
 PayPal Vibe Trading is an independent hackathon concept. Market data, backtests, balances, fills, and AutoPay approvals are illustrative. The optional PayPal connection creates Sandbox preview orders only. The demo uses no broker or live market feed and provides no real Buyer Protection coverage or financial advice.
+
+
+## Container quick start
+
+Docker is an optional way to run the Express demo without installing Node.js on the host. From the repository root:
+
+```sh
+docker compose up --build
+```
+
+Open [http://localhost:3000](http://localhost:3000). The Compose service does not create a database: the paper account, Guard approvals, and audit journal remain in-memory and reset when the container restarts. Compose reads an optional local `.env` file for variable interpolation; keep it private and never commit it. Provider credentials are optional for the sample-data experience. Braintree remains Sandbox-only.
+
+## Repository maintenance
+
+Run the test suite with `npm test`, check dependency advisories with `npm run audit`, and use Node.js 22 (see `.nvmrc`). The repository includes ESLint flat configuration and Prettier settings; install ESLint 9+ and Prettier locally before running those tools. GitHub Actions runs the existing syntax checks and test suite, while CodeQL and Dependabot provide additional static-analysis and dependency-update workflows.
+
+Coverage percentages are not published yet. This project uses Node's built-in `node:test` runner; a coverage provider and defensible baseline must be added before displaying a coverage badge or claiming a threshold.

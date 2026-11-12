@@ -1,0 +1,9 @@
+# Default owner for repository changes.
+* @CodesbyFebin
+
+# Security, CI, and deployment configuration require owner review.
+/.github/ @CodesbyFebin
+/SECURITY.md @CodesbyFebin
+/Dockerfile @CodesbyFebin
+/docker-compose.yml @CodesbyFebin
+/vercel.json @CodesbyFebin
