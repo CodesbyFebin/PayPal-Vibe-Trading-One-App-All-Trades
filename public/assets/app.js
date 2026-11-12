@@ -99,19 +99,30 @@ function drawEquity(canvas, equity) {
 }
 
 demoForm('backtest', async (fields, result) => {
-  const prompt = fields.get('prompt').trim();
-  const symbol = prompt.match(/\b[A-Z0-9]{2,10}-(?:USDT|USD|INR)\b/i)?.[0].toUpperCase();
-  const strategy = prompt.match(/\b\d{1,3}\s*\/\s*\d{1,3}\s*(?:MA|moving averages?)\b/i)?.[0];
-  const data = await request('/api/backtest', { symbol, strategy, capital: Number(fields.get('capital')) });
+  const prompt = fields.get('prompt').trim() || 'Custom market';
+  const prices = fields.get('prices').split(/[\\s,;]+/).filter(Boolean).map(Number);
+  if (prices.some(value => !Number.isFinite(value))) throw new Error('Prices must be numeric, separated by commas or new lines.');
+  const data = await request('/api/backtest/historical', {
+    symbol: prompt.slice(0, 80),
+    prices,
+    capital: Number(fields.get('capital')),
+    fast: Number(fields.get('fast')),
+    slow: Number(fields.get('slow')),
+    feeBps: Number(fields.get('feeBps')),
+  });
 
   setValues(result, {
-    symbol: data.symbol + ' · ' + data.strategy,
+    symbol: data.symbol + ' · SMA ' + data.fastWindow + '/' + data.slowWindow,
     sharpe: data.sharpe.toFixed(2),
     drawdown: data.maxDD + '%',
     winRate: data.winRate + '%',
+    returnPct: data.returnPct + '%',
+    finalEquity: usd.format(data.finalEquity),
+    trades: String(data.closedTrades),
     equity: data.equity.map(value => usd.format(value)).join(' → '),
   });
   drawEquity(result.querySelector('canvas'), data.equity);
+  return 'Backtest calculated from ' + data.dataPoints + ' supplied closes. ' + data.dataLabel + '.';
 });
 
 demoForm('paper', async (fields, result) => {
