@@ -195,8 +195,9 @@ function createTradingGuard({ ownerPin = process.env.OWNER_PIN, now = () => new 
     };
   }
 
-  function consumeApproval({ approvalId, payloadHash: suppliedHash }) {
+  function consumeApproval({ approvalId, trade }) {
     const item = approvals.get(approvalId);
+    const suppliedHash = payloadHash(normalizeTrade(trade));
     if (!item || item.status !== 'approved' || item.consumed || !safeEqual(suppliedHash, item.payloadHash)) {
       return { ok: false, error: 'Approval is missing, already consumed, or does not match this trade.' };
     }
