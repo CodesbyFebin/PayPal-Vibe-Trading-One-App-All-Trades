@@ -76,7 +76,7 @@ The strongest reusable part of the previous [AgentPaL repository](https://github
 
 The UI exposes the Guard status, pending approvals, signature validity, daily notional, audit-chain status, and owner controls. Set `OWNER_PIN` to a private value of at least 12 characters in the server environment to enable approvals and kill-switch controls. The PIN is read from the `x-owner-pin` request header and is never shipped to the browser or stored by the page.
 
-**Strict scope:** this is paper-only execution. It has no broker adapter, exchange API keys, live market feed, real order routing, or real-money trading. BTC-USDT and ETH-USDT quotes come from Kraken's public read-only market API, with cached fallback labelled stale. The mandate, approvals, paper ledger, and audit journal are in-memory and reset on process restart. The signature and hash chain are real cryptographic checks, but this is not durable production custody or an independently anchored audit log.
+**Strict scope:** this is paper-only execution. It has no broker adapter, exchange credentials or trading API access, real order routing, or real-money trading. BTC-USDT and ETH-USDT quotes come from Kraken's public read-only market API, with cached fallback labelled stale. The mandate, approvals, paper ledger, and audit journal are in-memory and reset on process restart. The signature and hash chain are real cryptographic checks, but this is not durable production custody or an independently anchored audit log.
 
 ## Braintree Sandbox checkout (primary payment demo)
 
