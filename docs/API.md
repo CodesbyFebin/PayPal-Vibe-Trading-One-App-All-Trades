@@ -15,14 +15,18 @@ Base URL: `http://localhost:3000/api`. Send JSON objects for POST requests. Opti
 | `POST /paypal/sandbox/verify` | Return `orderId` and signed `state` | Reads the status of a matching Sandbox order from PayPal |
 | `POST /backtest` | `symbol` (BTC-USDT), `strategy` (20/50 MA), `capital` (1000) | Fixture metrics and an equity curve scaled to starting capital |
 | `GET /portfolio` | — | Sample holdings and risk metrics |
-| `POST /paper` | `action` (BUY or SELL), `symbol` (BTC-USDT), `qty` (0.01) | Illustrative fill and updated in-memory demo account value |
+| `GET /guard/status` | — | Signed paper-only mandate, limits, pending approvals, kill-switch state, and audit-chain integrity |
+| `POST /guard/approve` | `approvalId`, `payloadHash`; owner PIN in `x-owner-pin` | Approves only the exact pending trade payload; requires server-side `OWNER_PIN` |
+| `POST /guard/kill-switch` | `enabled`; owner PIN in `x-owner-pin` | Enables or disables the paper execution freeze |
+| `POST /paper` | `action` (BUY or SELL), `symbol` (BTC-USDT or ETH-USDT), `qty` (0.01), optional `context`, optional `approvalId` | Guarded paper fill, approval request (202), or policy denial. Uses fixed demo prices, position accounting, and 10 bps simulated fees |
 | `POST /sip` | `amount` in INR (500) | Simulated monthly UPI AutoPay result |
 | `GET /alphas` | — | Two example signal summaries |
 
-Invalid requests return a JSON `error` and HTTP 400. Oversized JSON returns 413. Unknown API routes return 404. The backtest and SIP demo inputs are capped at 1,000,000 in their respective currencies.
+Invalid requests return a JSON `error` and HTTP 400. Oversized JSON returns 413. Unknown API routes return 404. The backtest and SIP demo inputs are capped at 1,000,000 in their respective currencies. Paper trades are restricted to BTC-USDT and ETH-USDT fixture prices, and never reach a broker. The AgentPaL-style Guard uses a process-local Ed25519 mandate and SHA-256 audit chain; its state resets on restart. Configure a server-side `OWNER_PIN` of at least 12 characters to approve above-threshold trades or operate the kill switch. An approval is bound to one exact payload hash and can be consumed once.
 
 ```sh
 curl -fsS http://localhost:3000/api/health
+curl -fsS http://localhost:3000/api/guard/status
 curl -fsS http://localhost:3000/api/vibe \
   -H 'Content-Type: application/json' \
   -d '{"feeling":"I feel bullish on AI"}'
