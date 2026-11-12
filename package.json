@@ -1,11 +1,36 @@
 {
   "name": "paypal-vibe-fullstack",
   "version": "1.0.0",
+  "description": "AI-guided paper-trading sandbox with signed risk mandates, deterministic execution controls, owner approvals, audit journaling, and Sandbox checkout.",
   "main": "server/index.js",
+  "author": "CodesbyFebin",
+  "license": "MIT",
+  "keywords": [
+    "paper-trading",
+    "fintech",
+    "express",
+    "nodejs",
+    "braintree",
+    "paypal-sandbox",
+    "risk-management",
+    "ed25519",
+    "audit-log",
+    "hackathon",
+    "open-source"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/issues"
+  },
+  "homepage": "https://paypal-vibe-trading.vercel.app",
   "scripts": {
     "start": "node server/index.js",
     "dev": "node server/index.js",
-    "test": "node --test"
+    "test": "node --test",
+    "audit": "npm audit --audit-level=high"
   },
   "dependencies": {
     "express": "^4.18.2",
