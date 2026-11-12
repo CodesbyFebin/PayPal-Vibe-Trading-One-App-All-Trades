@@ -1,0 +1,14 @@
+const express=require('express');const cors=require('cors');const path=require('path');
+const app=express();app.use(cors());app.use(express.json());
+app.use(express.static(path.join(__dirname,'../public')));
+app.use('/landing',express.static(path.join(__dirname,'../landing')));
+app.use('/mobile',express.static(path.join(__dirname,'../mobile')));
+let paper={cash:1000,nav:1084.22};
+app.get('/api/health',(req,res)=>res.json({ok:true,service:'paypal-vibe'}));
+app.post('/api/vibe',(req,res)=>{const feeling=req.body.feeling||"I feel bullish on AI";const l=feeling.toLowerCase();let mode='Balanced';if(l.includes('bullish')||l.includes('bold'))mode='Bold';if(l.includes('scared')||l.includes('safe'))mode='Safe';const map={Safe:{US:30,NSE:40,Crypto:10,PYUSD:20},Balanced:{US:30,NSE:30,Crypto:15,PYUSD:25},Bold:{US:30,NSE:30,Crypto:40,PYUSD:0}};res.json({feeling,mode,portfolio:map[mode]});});
+app.post('/api/backtest',(req,res)=>{res.json({symbol:req.body.symbol||'BTC-USDT',strategy:req.body.strategy||'20/50 MA',returnPct:24.6,sharpe:1.72,maxDD:-11.2,winRate:57,trades:42,equity:[1000,1184,1120,1340,1280]});});
+app.get('/api/portfolio',(req,res)=>res.json({holdings:[{name:'NIFTY',w:40},{name:'US AI',w:30},{name:'Crypto',w:15},{name:'PYUSD',w:15}],var95:-2.1,sharpe:1.62,maxDD:-8.2}));
+app.post('/api/paper',(req,res)=>{paper.nav+=12.18;res.json({fill:{action:'BUY',symbol:'BTC-USDT',qty:0.01,price:97240},nav:paper.nav});});
+app.post('/api/sip',(req,res)=>res.json({ok:true,amount:req.body.amount||500,frequency:'monthly',method:'UPI AutoPay',status:'Approved'}));
+app.get('/api/alphas',(req,res)=>res.json([{name:'GTJA 001',ic:0.052,sharpe:1.82},{name:'Alpha101 004',ic:0.041,sharpe:1.45}]));
+app.listen(process.env.PORT||3000,()=>console.log('Vibe on 3000'));
