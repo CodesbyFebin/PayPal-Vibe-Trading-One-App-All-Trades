@@ -1,5 +1,4 @@
 const express = require('express');
-const cors = require('cors');
 const path = require('node:path');
 const { createIntegrations } = require('./integrations');
 const { createTradingGuard } = require('./guard');
@@ -44,6 +43,7 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
   const paperAccount = { cashCents: 1_000_000, positions: Object.create(null) };
   const paperPrices = { 'BTC-USDT': 97240, 'ETH-USDT': 3450 }; // Fixed fixtures; no live market feed.
   const allowGuardControl = requestBudget(12);
+  const allowPaperTrade = requestBudget(30);
   const allowAi = requestBudget(12);
   const allowOrder = requestBudget(6);
   const allowVerification = requestBudget(12);
@@ -58,7 +58,7 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
     next();
   });
 
-  app.use('/api', cors(), express.json({ limit: '16kb' }));
+  app.use('/api', express.json({ limit: '16kb' }));
   app.post('/api/*', (req, res, next) => {
     if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
       return res.status(400).json({ error: 'Send a JSON object.' });
@@ -240,6 +240,7 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
   });
 
   app.post('/api/paper', (req, res) => {
+    if (!allowPaperTrade()) return res.status(429).json({ error: 'Paper trading is busy. Try again in a minute.' });
     const symbol = textField(req.body.symbol, 'BTC-USDT', 32)?.toUpperCase();
     const action = textField(req.body.action, 'BUY', 4)?.toUpperCase();
     const qty = positiveNumber(req.body.qty, 0.01);
