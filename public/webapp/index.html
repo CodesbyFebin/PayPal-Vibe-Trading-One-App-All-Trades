@@ -53,18 +53,47 @@
       </div>
     </section>
     <section class="panel" aria-labelledby="paper-heading">
-      <h2 id="paper-heading">Paper trading</h2>
-      <p>Preview a fixed-size BTC-USDT fill with a simulated account balance.</p>
+      <h2 id="paper-heading">Guarded paper trading</h2>
+      <p>Every simulated order is evaluated against a signed AgentPaL-style mandate. Prices are fixed demo fixtures, not live market data. No broker or live trading route exists.</p>
       <form id="paper">
         <label for="action">Side</label>
         <select id="action" name="action"><option>BUY</option><option>SELL</option></select>
-        <button type="submit" disabled>Simulate paper fill</button>
+        <label for="symbol">Market</label>
+        <select id="symbol" name="symbol"><option>BTC-USDT</option><option>ETH-USDT</option></select>
+        <label for="qty">Quantity</label>
+        <input id="qty" name="qty" type="number" min="0.00000001" step="0.0001" value="0.01" required>
+        <label for="trade-context">Untrusted idea / context (optional)</label>
+        <input id="trade-context" name="context" type="text" maxlength="500" placeholder="Why this paper trade is being considered">
+        <button type="submit" disabled>Evaluate and simulate paper trade</button>
       </form>
       <p id="paper-status" class="feedback" role="status"></p>
       <dl id="paper-result" class="result metrics" hidden>
-        <div><dt>Sample fill</dt><dd data-value="fill"></dd></div>
+        <div><dt>Trade</dt><dd data-value="fill"></dd></div>
+        <div><dt>Notional / fee</dt><dd data-value="cost"></dd></div>
+        <div><dt>Cash</dt><dd data-value="cash"></dd></div>
         <div><dt>Paper account value</dt><dd data-value="nav"></dd></div>
+        <div><dt>Policy decision</dt><dd data-value="decision"></dd></div>
       </dl>
+    </section>
+    <section class="panel" aria-labelledby="guard-heading">
+      <h2 id="guard-heading">AgentPaL Guard · trust control plane</h2>
+      <p>Ed25519-signed paper mandate, deterministic policy decisions, exact-payload approvals, emergency freeze, and a SHA-256 hash-chained event journal.</p>
+      <p id="guard-status" class="feedback" role="status" aria-live="polite">Loading signed mandate…</p>
+      <dl id="guard-metrics" class="metrics">
+        <div><dt>Mandate signature</dt><dd id="guard-signature">Checking…</dd></div>
+        <div><dt>Kill switch</dt><dd id="guard-kill-switch">Checking…</dd></div>
+        <div><dt>Daily notional</dt><dd id="guard-daily">Checking…</dd></div>
+        <div><dt>Audit chain</dt><dd id="guard-audit">Checking…</dd></div>
+      </dl>
+      <label for="owner-pin">Owner PIN (server-side OWNER_PIN; never stored in this page)</label>
+      <input id="owner-pin" type="password" autocomplete="off" placeholder="Enter owner PIN to approve or control freeze">
+      <div class="button-row">
+        <button id="guard-freeze" type="button">Freeze paper execution</button>
+        <button id="guard-resume" type="button">Resume paper execution</button>
+        <button id="guard-refresh" type="button">Refresh guard status</button>
+      </div>
+      <h3>Pending approvals</h3>
+      <div id="guard-approvals" class="feedback">No pending approvals.</div>
     </section>
   </main>
   <footer class="shell">Hackathon concept demo. Sample data only. No real trades, payments, or financial advice.</footer>
