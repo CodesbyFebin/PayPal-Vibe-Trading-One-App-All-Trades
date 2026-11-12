@@ -53,13 +53,28 @@ For the optional browser companion, open `chrome://extensions` or `edge://extens
 
 ## Implementation
 
-The demo uses HTML, CSS, JavaScript, and Node.js with Express. Vibe It uses the selected mode, a configured AI classifier, or keyword rules when the model is unavailable. The Chat Agent extracts a supported pair and moving-average window from the prompt and displays deterministic backtest fixtures. The server serves the overview, web app, mobile view, and [JSON API](docs/API.md) from one origin. The paper balance resets when the server restarts.
+The demo uses HTML, CSS, JavaScript, and Node.js with Express. Vibe It uses the selected mode, a configured AI classifier, or keyword rules when the model is unavailable. The Chat Agent extracts a supported pair and moving-average window from the prompt and displays deterministic backtest fixtures. The server serves the overview, web app, mobile view, and [JSON API](docs/API.md) from one origin. The paper ledger, signed mandate, approval queue, and audit chain are process-local and reset when the server restarts.
 
 ```sh
 npm test
 ```
 
-The test suite checks the served pages, portfolio choices, backtest values, paper fills, SIP simulation, and invalid request handling. The [hackathon release](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/releases/tag/v1.0-hackathon) preserves the original packaged submission build.
+The test suite checks served pages, AI/portfolio behavior, backtest fixtures, guarded paper fills, position accounting, simulated fees, Ed25519 mandate verification, prompt-injection denial, exact-payload approval, owner kill switch, audit-chain integrity, PayPal/Braintree mocked boundaries, SIP simulation, and invalid request handling. The [hackathon release](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/releases/tag/v1.0-hackathon) preserves the original packaged submission build.
+
+## AgentPaL Guard — signed, risk-bounded paper execution
+
+The strongest reusable part of the previous [AgentPaL repository](https://github.com/CodesbyFebin/PayPal-Vibe) is its trust model: **the AI may propose; deterministic policy decides; the owner approves; the execution boundary verifies**. This repository now adapts that pattern to paper trading instead of copying AgentPaL's Next.js finance engine into an incompatible Express application.
+
+- **Ed25519-signed mandate:** a process-local paper-only mandate defines allowed symbols/actions, automatic-approval notional, hard per-order cap, daily cap, and expiry. The server verifies the signature before each policy decision.
+- **Deterministic Guard:** kill switch, mandate integrity/expiry, symbol/action allowlists, finite positive quantity and price, prompt-injection pattern screening for untrusted context, per-order cap, daily cap, and owner approval threshold.
+- **Exact-payload approvals:** larger orders return `202 REQUIRE_APPROVAL`; the owner authenticates with a server-side PIN and approves a SHA-256 hash of the exact trade payload. A changed or already-consumed approval cannot authorize another payload.
+- **Emergency freeze:** owner-authenticated kill switch blocks all paper execution.
+- **Tamper-evident journal:** each decision, approval, freeze transition, and paper fill is linked into a SHA-256 hash chain. The status endpoint verifies the chain.
+- **Paper ledger:** BUY/SELL update cash and per-symbol positions, enforce sell inventory and available cash, mark positions to the fixed reference fixtures, and charge a clearly disclosed 10 bps simulated fee.
+
+The UI exposes the Guard status, pending approvals, signature validity, daily notional, audit-chain status, and owner controls. Set `OWNER_PIN` to a private value of at least 12 characters in the server environment to enable approvals and kill-switch controls. The PIN is read from the `x-owner-pin` request header and is never shipped to the browser or stored by the page.
+
+**Strict scope:** this is paper-only execution. It has no broker adapter, exchange API keys, live market feed, real order routing, or real-money trading. BTC-USDT and ETH-USDT prices are fixed fixtures. The mandate, approvals, paper ledger, and audit journal are in-memory and reset on process restart. The signature and hash chain are real cryptographic checks, but this is not durable production custody or an independently anchored audit log.
 
 ## Braintree Sandbox checkout (primary payment demo)
 
