@@ -42,7 +42,9 @@ function createApp({ integrations = createIntegrations(), app = express() } = {}
   let paperNavCents = 108422;
   const allowAi = requestBudget(12);
   const allowOrder = requestBudget(6);
-  const allowVerification = requestBudget(12);\n  const allowBraintreeToken = requestBudget(12);\n  const allowBraintreeCheckout = requestBudget(6);
+  const allowVerification = requestBudget(12);
+  const allowBraintreeToken = requestBudget(12);
+  const allowBraintreeCheckout = requestBudget(6);
 
   app.disable('x-powered-by');
   app.use((req, res, next) => {
