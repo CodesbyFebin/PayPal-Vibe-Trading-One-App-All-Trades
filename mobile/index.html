@@ -1,1 +1,58 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>【entity-PayPal¦canonical_name=PayPal】 Vibe - Mobile</title><style>body{font-family:system-ui;background:#EAF2FF;color:#003087;padding:20px}.card{background:#fff;padding:16px;border-radius:16px;margin:12px 0}button{background:#FFC439;border:0;padding:12px;border-radius:12px;font-weight:700;width:100%}</style></head><body><h1>PayPal Vibe - Mobile</h1><div class="card"><h2>Wallet: $1,084.22</h2><p>PYUSD: $210 • INR: ₹42,000 • Crypto: $310</p></div><div class="card"><h2>SIP - UPI AutoPay</h2><p>NIFTY SIP ₹500 / month • AutoPay ON</p><button>Start SIP with $1</button></div><div class="card"><h2>Vibe Score: 82</h2><p>Safe 30% • Balanced 45% • Bold 25%</p></div></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="PayPal Vibe Trading, a simulated trading workflow built for the PayPal AI Hackathon.">
+  <title>Mobile | PayPal Vibe Trading</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/vibe-icon.svg">
+  <link rel="stylesheet" href="/assets/app.css">
+  <script src="/assets/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="shell nav" aria-label="Main">
+      <a class="brand" href="/"><span class="mark" aria-hidden="true">V</span> PayPal Vibe Trading</a>
+      <div class="nav-links">
+          <a href="/">Vibe It</a>
+          <a href="/landing/">Overview</a>
+          <a href="/webapp/">Web App</a>
+          <a href="/mobile/" aria-current="page">Mobile</a>
+      </div>
+    </nav>
+  </header>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">Mobile wallet</p>
+      <h1>$1,084.22</h1>
+      <p>Sample wallet balance</p>
+    </section>
+    <div class="grid">
+      <section class="panel" aria-labelledby="sip-heading">
+        <h2 id="sip-heading">UPI AutoPay SIP</h2>
+        <p>Preview a recurring monthly contribution. This flow creates no payment or mandate.</p>
+        <form id="sip">
+          <label for="amount">Monthly contribution (INR)</label>
+          <input id="amount" name="amount" type="number" min="1" max="1000000" step="0.01" value="500" required>
+          <button type="submit">Simulate AutoPay setup</button>
+        </form>
+        <p id="sip-status" class="feedback" role="status"></p>
+        <dl id="sip-result" class="result metrics" hidden>
+          <div><dt>Schedule</dt><dd data-value="amount"></dd></div>
+          <div><dt>Status</dt><dd data-value="status"></dd></div>
+        </dl>
+      </section>
+      <section class="panel">
+        <h2>Wallet breakdown</h2>
+        <p>Sample balances shown in their original currencies.</p>
+        <dl class="metrics">
+          <div><dt>PYUSD</dt><dd>$210</dd></div>
+          <div><dt>INR</dt><dd>₹42,000</dd></div>
+          <div><dt>Crypto</dt><dd>$310</dd></div>
+        </dl>
+      </section>
+    </div>
+  </main>
+  <footer class="shell">Hackathon concept demo. Sample data only. No real trades, payments, or financial advice.</footer>
+</body>
+</html>

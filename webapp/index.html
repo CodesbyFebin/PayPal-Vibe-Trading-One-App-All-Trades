@@ -1,1 +1,72 @@
-<!doctype html><html><head><meta charset="utf-8"><title>【entity-PayPal¦canonical_name=PayPal】 Vibe — WebApp</title><style>body{font-family:system-ui;background:#0B1B3A;color:#fff;padding:20px}.card{background:#12295A;border-radius:16px;padding:16px;margin:12px 0}button{background:#FFC439;border:0;padding:12px;border-radius:12px;font-weight:700}input{padding:12px;width:90%;border-radius:10px}pre{background:#000;color:#7CFF8A;padding:12px;border-radius:12px}</style></head><body><h1>WebApp — Chat Agent + Backtest</h1><div class="card"><input id="chat" placeholder="Backtest BTC-USDT 20/50 MA crossover 2024"><br><button onclick="run()">Run Agent</button><pre id="o">Plan > Ground > Execute > Validate</pre></div><script>async function run(){let r=await fetch('/api/backtest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({symbol:'BTC-USDT'})});document.getElementById('o').innerText=JSON.stringify(await r.json(),null,2)}</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="PayPal Vibe Trading, a simulated trading workflow built for the PayPal AI Hackathon.">
+  <title>Web App | PayPal Vibe Trading</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/vibe-icon.svg">
+  <link rel="stylesheet" href="/assets/app.css">
+  <script src="/assets/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="shell nav" aria-label="Main">
+      <a class="brand" href="/"><span class="mark" aria-hidden="true">V</span> PayPal Vibe Trading</a>
+      <div class="nav-links">
+          <a href="/">Vibe It</a>
+          <a href="/landing/">Overview</a>
+          <a href="/webapp/" aria-current="page">Web App</a>
+          <a href="/mobile/">Mobile</a>
+      </div>
+    </nav>
+  </header>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">Web App</p>
+      <h1>Ask. Backtest. Compare.</h1>
+      <p>Use the Chat Agent to preview a sample backtest, then try a paper trade. Results use fixture data.</p>
+    </section>
+    <section class="panel" aria-labelledby="backtest-heading">
+      <h2 id="backtest-heading">Chat Agent + Backtest Lab</h2>
+      <p class="muted">Plan → Ground → Execute → Validate</p>
+      <form id="backtest">
+        <label for="prompt">Backtest prompt</label>
+        <input id="prompt" name="prompt" value="Backtest BTC-USDT 20/50 MA crossover" maxlength="160" aria-describedby="prompt-hint">
+        <small id="prompt-hint">Try a pair such as BTC-USDT and a moving-average window such as 20/50 MA.</small>
+        <label for="capital">Starting capital (USD)</label>
+        <input id="capital" name="capital" type="number" min="1" max="1000000" step="0.01" value="1000" required>
+        <button type="submit">Run sample backtest</button>
+      </form>
+      <p id="backtest-status" class="feedback" role="status"></p>
+      <div id="backtest-result" class="result" hidden>
+        <h2 data-value="symbol"></h2>
+        <dl class="metrics">
+          <div><dt>Sharpe ratio</dt><dd data-value="sharpe"></dd></div>
+          <div><dt>Max drawdown</dt><dd data-value="drawdown"></dd></div>
+          <div><dt>Win rate</dt><dd data-value="winRate"></dd></div>
+        </dl>
+        <figure>
+          <canvas width="640" height="190" aria-hidden="true"></canvas>
+          <figcaption>Sample equity curve <span data-value="equity"></span></figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="panel" aria-labelledby="paper-heading">
+      <h2 id="paper-heading">Paper trading</h2>
+      <p>Preview a fixed-size BTC-USDT fill with a simulated account balance.</p>
+      <form id="paper">
+        <label for="action">Side</label>
+        <select id="action" name="action"><option>BUY</option><option>SELL</option></select>
+        <button type="submit">Simulate paper fill</button>
+      </form>
+      <p id="paper-status" class="feedback" role="status"></p>
+      <dl id="paper-result" class="result metrics" hidden>
+        <div><dt>Sample fill</dt><dd data-value="fill"></dd></div>
+        <div><dt>Paper account value</dt><dd data-value="nav"></dd></div>
+      </dl>
+    </section>
+  </main>
+  <footer class="shell">Hackathon concept demo. Sample data only. No real trades, payments, or financial advice.</footer>
+</body>
+</html>

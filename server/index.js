@@ -1,14 +1,139 @@
-const express=require('express');const cors=require('cors');const path=require('path');
-const app=express();app.use(cors());app.use(express.json());
-app.use(express.static(path.join(__dirname,'../public')));
-app.use('/landing',express.static(path.join(__dirname,'../landing')));
-app.use('/mobile',express.static(path.join(__dirname,'../mobile')));
-let paper={cash:1000,nav:1084.22};
-app.get('/api/health',(req,res)=>res.json({ok:true,service:'paypal-vibe'}));
-app.post('/api/vibe',(req,res)=>{const feeling=req.body.feeling||"I feel bullish on AI";const l=feeling.toLowerCase();let mode='Balanced';if(l.includes('bullish')||l.includes('bold'))mode='Bold';if(l.includes('scared')||l.includes('safe'))mode='Safe';const map={Safe:{US:30,NSE:40,Crypto:10,PYUSD:20},Balanced:{US:30,NSE:30,Crypto:15,PYUSD:25},Bold:{US:30,NSE:30,Crypto:40,PYUSD:0}};res.json({feeling,mode,portfolio:map[mode]});});
-app.post('/api/backtest',(req,res)=>{res.json({symbol:req.body.symbol||'BTC-USDT',strategy:req.body.strategy||'20/50 MA',returnPct:24.6,sharpe:1.72,maxDD:-11.2,winRate:57,trades:42,equity:[1000,1184,1120,1340,1280]});});
-app.get('/api/portfolio',(req,res)=>res.json({holdings:[{name:'NIFTY',w:40},{name:'US AI',w:30},{name:'Crypto',w:15},{name:'PYUSD',w:15}],var95:-2.1,sharpe:1.62,maxDD:-8.2}));
-app.post('/api/paper',(req,res)=>{paper.nav+=12.18;res.json({fill:{action:'BUY',symbol:'BTC-USDT',qty:0.01,price:97240},nav:paper.nav});});
-app.post('/api/sip',(req,res)=>res.json({ok:true,amount:req.body.amount||500,frequency:'monthly',method:'UPI AutoPay',status:'Approved'}));
-app.get('/api/alphas',(req,res)=>res.json([{name:'GTJA 001',ic:0.052,sharpe:1.82},{name:'Alpha101 004',ic:0.041,sharpe:1.45}]));
-app.listen(process.env.PORT||3000,()=>console.log('Vibe on 3000'));
+const express = require('express');
+const cors = require('cors');
+const path = require('node:path');
+
+const root = path.join(__dirname, '..');
+const allocations = {
+  Safe: { US: 30, NSE: 40, Crypto: 10, PYUSD: 20 },
+  Balanced: { US: 30, NSE: 30, Crypto: 15, PYUSD: 25 },
+  Bold: { US: 30, NSE: 30, Crypto: 40, PYUSD: 0 },
+};
+
+function textField(value, fallback, maxLength) {
+  if (value === undefined) return fallback;
+  if (typeof value !== 'string' || value.length > maxLength) return null;
+  return value.trim() || fallback;
+}
+
+function positiveNumber(value, fallback) {
+  if (value === undefined) return fallback;
+  if (typeof value !== 'number' && typeof value !== 'string') return null;
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : null;
+}
+
+function createApp() {
+  const app = express();
+  let paperNavCents = 108422;
+
+  app.disable('x-powered-by');
+  app.use((req, res, next) => {
+    res.set('X-Content-Type-Options', 'nosniff');
+    res.set('Referrer-Policy', 'no-referrer');
+    res.set('Content-Security-Policy', "default-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
+    next();
+  });
+
+  app.use('/api', cors(), express.json({ limit: '16kb' }));
+  app.post('/api/*', (req, res, next) => {
+    if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
+      return res.status(400).json({ error: 'Send a JSON object.' });
+    }
+    next();
+  });
+
+  app.get('/api/health', (req, res) => res.json({ ok: true, service: 'paypal-vibe' }));
+
+  app.post('/api/vibe', (req, res) => {
+    const feeling = textField(req.body.feeling, 'I feel bullish on AI', 240);
+    const selectedMode = req.body.mode;
+    if (feeling === null) {
+      return res.status(400).json({ error: 'Feeling must be text up to 240 characters.' });
+    }
+    if (selectedMode !== undefined && (typeof selectedMode !== 'string' || !Object.hasOwn(allocations, selectedMode))) {
+      return res.status(400).json({ error: 'Choose Safe, Balanced, or Bold.' });
+    }
+
+    let mode = selectedMode ?? 'Balanced';
+    if (selectedMode === undefined) {
+      const prompt = feeling.toLowerCase();
+      if (/scared|safe/.test(prompt)) mode = 'Safe';
+      else if (/bullish|bold/.test(prompt)) mode = 'Bold';
+    }
+
+    res.json({ feeling, mode, portfolio: allocations[mode] });
+  });
+
+  app.post('/api/backtest', (req, res) => {
+    const symbol = textField(req.body.symbol, 'BTC-USDT', 32);
+    const strategy = textField(req.body.strategy, '20/50 MA', 80);
+    const capital = positiveNumber(req.body.capital, 1000);
+    if (symbol === null || strategy === null || capital === null || capital > 1_000_000) {
+      return res.status(400).json({ error: 'Use a valid symbol, strategy, and starting capital up to 1,000,000.' });
+    }
+
+    // Scale the supplied sample curve. No market data is fetched.
+    const equity = [1000, 1184, 1120, 1340, 1280].map(value => Math.round(value * capital / 10) / 100);
+    res.json({ symbol, strategy, returnPct: 24.6, sharpe: 1.72, maxDD: -11.2, winRate: 57, trades: 42, equity });
+  });
+
+  app.get('/api/portfolio', (req, res) => {
+    res.json({
+      holdings: [{ name: 'NIFTY', w: 40 }, { name: 'US AI', w: 30 }, { name: 'Crypto', w: 15 }, { name: 'PYUSD', w: 15 }],
+      var95: -2.1,
+      sharpe: 1.62,
+      maxDD: -8.2,
+    });
+  });
+
+  app.post('/api/paper', (req, res) => {
+    const symbol = textField(req.body.symbol, 'BTC-USDT', 32);
+    const action = textField(req.body.action, 'BUY', 4)?.toUpperCase();
+    const qty = positiveNumber(req.body.qty, 0.01);
+    if (!symbol || !['BUY', 'SELL'].includes(action) || qty === null) {
+      return res.status(400).json({ error: 'Enter a symbol, BUY or SELL, and a positive quantity.' });
+    }
+
+    paperNavCents += 1218;
+    res.json({ fill: { action, symbol, qty, price: 97240 }, nav: paperNavCents / 100 });
+  });
+
+  app.post('/api/sip', (req, res) => {
+    const amount = positiveNumber(req.body.amount, 500);
+    if (amount === null || amount > 1_000_000) {
+      return res.status(400).json({ error: 'Enter a monthly contribution between ₹1 and ₹10,00,000.' });
+    }
+    if (amount < 1) {
+      return res.status(400).json({ error: 'The minimum demo contribution is ₹1.' });
+    }
+    res.json({ ok: true, amount, frequency: 'monthly', method: 'UPI AutoPay', status: 'Approved' });
+  });
+
+  app.get('/api/alphas', (req, res) => res.json([
+    { name: 'GTJA 001', ic: 0.052, sharpe: 1.82 },
+    { name: 'Alpha101 004', ic: 0.041, sharpe: 1.44 },
+  ]));
+  app.use('/api', (req, res) => res.status(404).json({ error: 'API route not found.' }));
+
+  for (const section of ['landing', 'webapp', 'mobile']) {
+    app.use('/' + section, express.static(path.join(root, section)));
+  }
+  app.use(express.static(path.join(root, 'public')));
+
+  app.use((error, req, res, next) => {
+    if (res.headersSent) return next(error);
+    if (error.type === 'entity.too.large') return res.status(413).json({ error: 'Request is too large.' });
+    if (error.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid JSON.' });
+    console.error(error);
+    res.status(500).json({ error: 'The demo could not process the request.' });
+  });
+
+  return app;
+}
+
+if (require.main === module) {
+  const port = process.env.PORT || 3000;
+  createApp().listen(port, () => console.log('PayPal Vibe demo listening on port ' + port));
+}
+
+module.exports = { createApp };
