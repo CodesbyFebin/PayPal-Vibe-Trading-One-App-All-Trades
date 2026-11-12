@@ -10,12 +10,12 @@ const {
 } = require('node:crypto');
 
 const INJECTION_PATTERNS = [
-  /ignore\\s+(all\\s+)?(previous\\s+)?(instructions|limits|rules)/i,
-  /system\\s+override/i,
-  /disregard\\s+(the\\s+)?mandate/i,
-  /bypass\\s+(the\\s+)?(policy|budget|limit)/i,
-  /auto[- ]approve\\s+(this|the)/i,
-  /pay\\s+immediately/i,
+  /ignore\s+(all\s+)?(previous\s+)?(instructions|limits|rules)/i,
+  /system\s+override/i,
+  /disregard\s+(the\s+)?mandate/i,
+  /bypass\s+(the\s+)?(policy|budget|limit)/i,
+  /auto[- ]approve\s+(this|the)/i,
+  /pay\s+immediately/i,
 ];
 
 function canonicalJson(value) {
@@ -65,7 +65,7 @@ function createTradingGuard({ ownerPin = process.env.OWNER_PIN, now = () => new 
 
   function appendEvent(type, details) {
     const body = { id: randomUUID(), at: now().toISOString(), type, details };
-    const hash = sha256(lastHash + '\\n' + canonicalJson(body));
+    const hash = sha256(lastHash + '\n' + canonicalJson(body));
     const event = { ...body, previousHash: lastHash, hash };
     events.push(event);
     lastHash = hash;
@@ -93,7 +93,7 @@ function createTradingGuard({ ownerPin = process.env.OWNER_PIN, now = () => new 
     let previous = '0'.repeat(64);
     for (const event of events) {
       const { previousHash, hash, ...body } = event;
-      if (previousHash !== previous || sha256(previous + '\\n' + canonicalJson(body)) !== hash) return false;
+      if (previousHash !== previous || sha256(previous + '\n' + canonicalJson(body)) !== hash) return false;
       previous = hash;
     }
     return previous === lastHash;
