@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('node:path');
 const { createIntegrations } = require('./integrations');
 const { createTradingGuard } = require('./guard');
+const market = require('./market');
 
 const root = path.join(__dirname, '..');
 const allocations = {
@@ -38,10 +39,9 @@ function requestBudget(max) {
   };
 }
 
-function createApp({ integrations = createIntegrations(), app = express(), ownerPin = process.env.OWNER_PIN } = {}) {
+function createApp({ integrations = createIntegrations(), app = express(), ownerPin = process.env.OWNER_PIN, marketData = market } = {}) {
   const guard = createTradingGuard({ ownerPin });
   const paperAccount = { cashCents: 1_000_000, positions: Object.create(null) };
-  const paperPrices = { 'BTC-USDT': 97240, 'ETH-USDT': 3450 }; // Fixed fixtures; no live market feed.
   const allowGuardControl = requestBudget(12);
   const allowPaperTrade = requestBudget(30);
   const allowAi = requestBudget(12);
@@ -67,6 +67,12 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
   });
 
   app.get('/api/health', (req, res) => res.json({ ok: true, service: 'paypal-vibe' }));
+
+  app.get('/api/market/prices', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    const prices = await marketData.getPrices();
+    res.json({ source: 'Kraken public market data', prices, fetchedAt: new Date().toISOString() });
+  });
 
   app.get('/api/demo/status', (req, res) => {
     res.set('Cache-Control', 'no-store');
@@ -138,7 +144,8 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
         // The existing rules remain available when the provider is unavailable.
       }
     }
-    res.json({ feeling, mode, portfolio: allocations[mode], ...(wantsAi ? { source } : {}), ...(classification ? { reason: classification.reason, provider: classification.provider } : {}) });
+    const marketPrices = await marketData.getPrices();
+    res.json({ feeling, mode, portfolio: allocations[mode], market: marketPrices, ...(wantsAi ? { source } : {}), ...(classification ? { reason: classification.reason, provider: classification.provider } : {}) });
   });
 
   app.post('/api/vibe-ai', async (req, res) => {
@@ -193,17 +200,19 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
     }
   });
 
-  app.post('/api/backtest', (req, res) => {
-    const symbol = textField(req.body.symbol, 'BTC-USDT', 32);
+  app.post('/api/backtest', async (req, res) => {
+    const symbol = textField(req.body.symbol, 'BTC-USDT', 32)?.toUpperCase();
     const strategy = textField(req.body.strategy, '20/50 MA', 80);
     const capital = positiveNumber(req.body.capital, 1000);
-    if (symbol === null || strategy === null || capital === null || capital > 1_000_000) {
-      return res.status(400).json({ error: 'Use a valid symbol, strategy, and starting capital up to 1,000,000.' });
+    if (!symbol || !['BTC-USDT', 'ETH-USDT'].includes(symbol) || strategy === null || !/^\d{1,3}\s*\/\s*\d{1,3}\s*MA$/i.test(strategy) || capital === null || capital > 1_000_000) {
+      return res.status(400).json({ error: 'Use BTC-USDT or ETH-USDT, a valid moving-average strategy, and starting capital up to 1,000,000.' });
     }
-
-    // Scale the supplied sample curve. No market data is fetched.
-    const equity = [1000, 1184, 1120, 1340, 1280].map(value => Math.round(value * capital / 10) / 100);
-    res.json({ symbol, strategy, returnPct: 24.6, sharpe: 1.72, maxDD: -11.2, winRate: 57, trades: 42, equity });
+    try {
+      const candles = await marketData.getHistory(symbol);
+      res.json(marketData.runMovingAverageBacktest({ symbol, strategy, capital, candles }));
+    } catch (error) {
+      res.status(502).json({ error: error.message || 'Live market history is unavailable.' });
+    }
   });
 
   app.get('/api/portfolio', (req, res) => {
@@ -239,7 +248,7 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
     res.json(result);
   });
 
-  app.post('/api/paper', (req, res) => {
+  app.post('/api/paper', async (req, res) => {
     if (!allowPaperTrade()) return res.status(429).json({ error: 'Paper trading is busy. Try again in a minute.' });
     const symbol = textField(req.body.symbol, 'BTC-USDT', 32)?.toUpperCase();
     const action = textField(req.body.action, 'BUY', 4)?.toUpperCase();
@@ -250,7 +259,10 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
       return res.status(400).json({ error: 'Enter an allowed symbol, BUY or SELL, and a positive quantity.' });
     }
 
-    const price = paperPrices[symbol];
+    let quote;
+    try { quote = await marketData.getPrice(symbol, { force: true }); }
+    catch (error) { return res.status(503).json({ error: error.message }); }
+    const price = quote.price;
     const decision = guard.evaluate({ action, symbol, qty, price, context, ...(approvalId ? { approvalId } : {}) });
     if (decision.decision === 'DENY') {
       return res.status(403).json({ error: 'Trading Guard denied this paper trade.', guard: decision });
@@ -284,11 +296,11 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
     const nav = Number((paperAccount.cashCents / 100 + positionValue).toFixed(2));
     guard.recordFill({ action, symbol, qty, notional });
     res.json({
-      fill: { action, symbol, qty, price, notional, fee, feeRateBps: 10, priceSource: 'fixed-demo-fixture' },
+      fill: { action, symbol, qty, price, notional, fee, feeRateBps: 10, priceSource: quote.source, priceFetchedAt: quote.fetchedAt, priceStale: quote.stale },
       account: { cash: Number((paperAccount.cashCents / 100).toFixed(2)), positions: paperAccount.positions, nav },
       nav,
       guard: { decision: 'ALLOW', reasons: decision.reasons },
-      disclaimer: 'Paper-only execution with a fixed demo price; not a live market order.',
+      disclaimer: 'Paper-only execution using a read-only market quote; no broker order was sent.',
     });
   });
 
@@ -300,7 +312,7 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
     if (amount < 1) {
       return res.status(400).json({ error: 'The minimum demo contribution is ₹1.' });
     }
-    res.json({ ok: true, amount, frequency: 'monthly', method: 'UPI AutoPay', status: 'Approved' });
+    res.json({ ok: true, amount, frequency: 'monthly', method: 'UPI AutoPay simulation', status: 'Simulated approval — no UPI mandate created', realMandateCreated: false });
   });
 
   app.get('/api/alphas', (req, res) => res.json([

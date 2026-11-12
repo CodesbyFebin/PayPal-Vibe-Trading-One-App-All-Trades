@@ -49,6 +49,13 @@ function setValues(container, values) {
   }
 }
 
+async function getData(path) {
+  const response = await fetch(path, { cache: 'no-store' });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
+  return data;
+}
+
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 const inr = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 });
 
@@ -62,6 +69,8 @@ demoForm('vibe', async (fields, result) => {
   const source = mode ? 'Manually selected mode'
     : data.source === 'ai' ? 'AI-selected mode (' + data.provider + ')' : 'Rule-based demo mode';
   setValues(result, { mode: data.mode, feeling: data.feeling, source, reason: data.reason || '' });
+  const marketLine = result.querySelector('[data-value="market"]');
+  if (marketLine) marketLine.textContent = (data.market || []).filter(item => item.price).map(item => item.symbol + ' ' + usd.format(item.price) + (item.stale ? ' · cached' : ' · live')).join(' | ');
   for (const [asset, percent] of Object.entries(data.portfolio)) {
     setValues(result, { [asset]: percent + '%' });
     result.querySelector('[data-meter="' + asset + '"]').value = percent;
@@ -112,6 +121,8 @@ demoForm('backtest', async (fields, result) => {
     equity: data.equity.map(value => usd.format(value)).join(' → '),
   });
   drawEquity(result.querySelector('canvas'), data.equity);
+  const source = result.querySelector('[data-value="backtest-source"]');
+  if (source) source.textContent = data.source + ' · ' + data.period.candles + ' daily candles · ' + data.period.from.slice(0, 10) + ' to ' + data.period.to.slice(0, 10) + ' · 10 bps per side';
 });
 
 demoForm('paper', async (fields, result) => {
@@ -140,7 +151,7 @@ demoForm('paper', async (fields, result) => {
     decision: data.guard.decision,
   });
   await refreshGuardStatus();
-  return 'Guard ALLOW · paper fill recorded. Price is a fixed demo fixture.';
+  return 'Guard ALLOW · paper fill recorded. Read-only market quote: ' + data.fill.priceSource + (data.fill.priceStale ? ' (cached)' : ' (live)') + '.';
 });
 
 async function refreshGuardStatus() {
@@ -243,7 +254,7 @@ if (guardFreeze) {
 
 demoForm('sip', async (fields, result) => {
   const data = await request('/api/sip', { amount: Number(fields.get('amount')) });
-  setValues(result, { status: data.status + ' (simulation)', amount: inr.format(data.amount) + ' / month' });
+  setValues(result, { status: data.status, amount: inr.format(data.amount) + ' / month' });
 });
 
 demoForm('sandbox', async (fields, result) => {
@@ -394,4 +405,38 @@ if (sandboxReturn) {
         });
     }
   }
+}
+
+
+async function refreshMarketPanel() {
+  const panel = document.getElementById('market-prices');
+  if (!panel) return;
+  const status = document.getElementById('market-prices-status');
+  try {
+    const data = await getData('/api/market/prices');
+    const container = document.getElementById('market-price-cards');
+    container.replaceChildren();
+    for (const quote of data.prices) {
+      const card = document.createElement('div');
+      card.className = 'market-quote';
+      const heading = document.createElement('strong');
+      heading.textContent = quote.symbol;
+      const value = document.createElement('p');
+      value.textContent = quote.price ? usd.format(quote.price) : 'Unavailable';
+      const meta = document.createElement('small');
+      meta.textContent = quote.price
+        ? quote.source + ' · ' + new Date(quote.fetchedAt).toLocaleTimeString() + (quote.stale ? ' · CACHED, NOT LIVE' : ' · LIVE')
+        : quote.error;
+      card.append(heading, value, meta);
+      container.append(card);
+    }
+    status.textContent = 'Read-only feed · refreshed ' + new Date(data.fetchedAt).toLocaleTimeString() + ' · cached quotes are labelled.';
+  } catch (error) {
+    status.textContent = 'Market feed unavailable: ' + error.message;
+  }
+}
+
+if (document.getElementById('market-prices')) {
+  refreshMarketPanel();
+  window.setInterval(refreshMarketPanel, 15000);
 }

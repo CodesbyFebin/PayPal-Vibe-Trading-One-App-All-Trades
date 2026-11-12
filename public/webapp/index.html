@@ -25,7 +25,12 @@
     <section class="hero">
       <p class="eyebrow">Web App</p>
       <h1>Ask. Backtest. Compare.</h1>
-      <p>Use the Chat Agent to preview a sample backtest, then try a paper trade. Results use fixture data.</p>
+      <p>Use live read-only Kraken prices and a reproducible moving-average backtest. All orders remain simulated paper fills.</p>
+    </section>
+    <section class="panel" id="market-prices" aria-labelledby="market-heading">
+      <h2 id="market-heading">Live market reference</h2>
+      <p id="market-prices-status" class="feedback" role="status">Connecting to read-only market data…</p>
+      <div id="market-price-cards" class="grid"></div>
     </section>
     <section class="panel" aria-labelledby="backtest-heading">
       <h2 id="backtest-heading">Chat Agent + Backtest Lab</h2>
@@ -36,11 +41,12 @@
         <small id="prompt-hint">Try a pair such as BTC-USDT and a moving-average window such as 20/50 MA.</small>
         <label for="capital">Starting capital (USD)</label>
         <input id="capital" name="capital" type="number" min="1" max="1000000" step="0.01" value="1000" required>
-        <button type="submit" disabled>Run sample backtest</button>
+        <button type="submit" disabled>Run historical backtest</button>
       </form>
       <p id="backtest-status" class="feedback" role="status"></p>
       <div id="backtest-result" class="result" hidden>
         <h2 data-value="symbol"></h2>
+        <p class="muted" data-value="backtest-source"></p>
         <dl class="metrics">
           <div><dt>Sharpe ratio</dt><dd data-value="sharpe"></dd></div>
           <div><dt>Max drawdown</dt><dd data-value="drawdown"></dd></div>
@@ -54,7 +60,7 @@
     </section>
     <section class="panel" aria-labelledby="paper-heading">
       <h2 id="paper-heading">Guarded paper trading</h2>
-      <p>Every simulated order is evaluated against a signed AgentPaL-style mandate. Prices are fixed demo fixtures, not live market data. No broker or live trading route exists.</p>
+      <p>Every simulated order is evaluated against a signed AgentPaL-style mandate. Prices are read-only market quotes. Paper fills never reach a broker.</p>
       <form id="paper">
         <label for="action">Side</label>
         <select id="action" name="action"><option>BUY</option><option>SELL</option></select>
