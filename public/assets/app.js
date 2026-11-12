@@ -5,7 +5,12 @@ async function request(path, body) {
     body: JSON.stringify(body),
   });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
+  if (!response.ok) {
+    const error = new Error(data.error || 'The request could not be completed.');
+    error.status = response.status;
+    error.data = data;
+    throw error;
+  }
   return data;
 }
 
@@ -25,8 +30,8 @@ function demoForm(id, onSubmit) {
     delete status.dataset.error;
     status.textContent = 'Loading demo result…';
     try {
-      await onSubmit(new FormData(form), result);
-      status.textContent = 'Demo result ready.';
+      const message = await onSubmit(new FormData(form), result);
+      status.textContent = typeof message === 'string' ? message : 'Demo result ready.';
       result.hidden = false;
     } catch (error) {
       status.dataset.error = '';
@@ -110,12 +115,114 @@ demoForm('backtest', async (fields, result) => {
 });
 
 demoForm('paper', async (fields, result) => {
-  const data = await request('/api/paper', { action: fields.get('action') });
-  setValues(result, {
-    fill: data.fill.action + ' ' + data.fill.qty + ' ' + data.fill.symbol,
-    nav: usd.format(data.nav),
+  const data = await request('/api/paper', {
+    action: fields.get('action'),
+    symbol: fields.get('symbol'),
+    qty: Number(fields.get('qty')),
+    context: fields.get('context'),
   });
+  if (data.guard && data.guard.decision === 'REQUIRE_APPROVAL') {
+    setValues(result, {
+      fill: 'Awaiting owner approval · ' + data.guard.trade.action + ' ' + data.guard.trade.qty + ' ' + data.guard.trade.symbol,
+      cost: usd.format(data.guard.trade.notional) + ' · not executed',
+      cash: 'Unchanged',
+      nav: 'Unchanged',
+      decision: 'REQUIRE_APPROVAL',
+    });
+    await refreshGuardStatus();
+    return 'Owner approval required. No paper fill was created.';
+  }
+  setValues(result, {
+    fill: data.fill.action + ' ' + data.fill.qty + ' ' + data.fill.symbol + ' @ ' + usd.format(data.fill.price),
+    cost: usd.format(data.fill.notional) + ' notional · ' + usd.format(data.fill.fee) + ' fee',
+    cash: usd.format(data.account.cash),
+    nav: usd.format(data.nav),
+    decision: data.guard.decision,
+  });
+  await refreshGuardStatus();
+  return 'Guard ALLOW · paper fill recorded. Price is a fixed demo fixture.';
 });
+
+async function refreshGuardStatus() {
+  const status = document.getElementById('guard-status');
+  if (!status) return;
+  try {
+    const response = await fetch('/api/guard/status', { cache: 'no-store' });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Guard status unavailable.');
+    document.getElementById('guard-signature').textContent = data.mandate.signatureValid ? 'VALID · Ed25519' : 'INVALID';
+    document.getElementById('guard-kill-switch').textContent = data.killSwitch ? 'FROZEN' : 'OFF';
+    document.getElementById('guard-daily').textContent = usd.format(data.limits.dailyNotional) + ' / ' + usd.format(data.limits.maxDailyNotional);
+    document.getElementById('guard-audit').textContent = data.audit.chainValid ? 'VALID · ' + data.audit.events + ' events' : 'CHAIN INVALID';
+    status.textContent = 'Paper-only mandate · expires ' + new Date(data.mandate.expiresAt).toLocaleString();
+    const container = document.getElementById('guard-approvals');
+    container.replaceChildren();
+    if (!data.pendingApprovals.length) {
+      container.textContent = 'No pending approvals.';
+    } else {
+      for (const approval of data.pendingApprovals) {
+        const card = document.createElement('div');
+        const detail = document.createElement('p');
+        detail.textContent = approval.trade.action + ' ' + approval.trade.qty + ' ' + approval.trade.symbol
+          + ' · ' + usd.format(approval.trade.notional) + ' · ' + approval.status;
+        const hash = document.createElement('code');
+        hash.textContent = approval.payloadHash;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = 'Approve exact trade payload';
+        button.addEventListener('click', async () => {
+          const pin = document.getElementById('owner-pin').value;
+          button.disabled = true;
+          try {
+            const response = await fetch('/api/guard/approve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'x-owner-pin': pin },
+              body: JSON.stringify({ approvalId: approval.approvalId, payloadHash: approval.payloadHash }),
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Approval failed.');
+            status.textContent = 'Exact payload approved. Resubmit the identical paper trade with its approval ID via the API to execute.';
+          } catch (error) {
+            status.textContent = error.message;
+          } finally {
+            button.disabled = false;
+            await refreshGuardStatus();
+          }
+        });
+        card.append(detail, hash, button);
+        container.append(card);
+      }
+    }
+  } catch (error) {
+    status.textContent = error.message;
+  }
+}
+
+async function changeGuardFreeze(enabled) {
+  const status = document.getElementById('guard-status');
+  const pin = document.getElementById('owner-pin').value;
+  try {
+    const response = await fetch('/api/guard/kill-switch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-owner-pin': pin },
+      body: JSON.stringify({ enabled }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Owner control failed.');
+    status.textContent = enabled ? 'Kill switch enabled. Paper execution is frozen.' : 'Kill switch disabled by owner.';
+  } catch (error) {
+    status.textContent = error.message;
+  }
+  await refreshGuardStatus();
+}
+
+const guardFreeze = document.getElementById('guard-freeze');
+if (guardFreeze) {
+  guardFreeze.addEventListener('click', () => changeGuardFreeze(true));
+  document.getElementById('guard-resume').addEventListener('click', () => changeGuardFreeze(false));
+  document.getElementById('guard-refresh').addEventListener('click', refreshGuardStatus);
+  refreshGuardStatus();
+}
 
 demoForm('sip', async (fields, result) => {
   const data = await request('/api/sip', { amount: Number(fields.get('amount')) });
