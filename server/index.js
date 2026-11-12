@@ -59,7 +59,7 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
   });
 
   app.use('/api', express.json({ limit: '16kb' }));
-  app.post('/api/*', (req, res, next) => {
+  app.post('/api/{*splat}', (req, res, next) => {
     if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
       return res.status(400).json({ error: 'Send a JSON object.' });
     }
