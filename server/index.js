@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('node:path');
 const { createIntegrations } = require('./integrations');
 const { createTradingGuard } = require('./guard');
+const { rateLimit } = require('express-rate-limit');
 
 const root = path.join(__dirname, '..');
 const allocations = {
@@ -46,9 +47,16 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
   const allowPaperTrade = requestBudget(30);
   const allowAi = requestBudget(12);
   const allowOrder = requestBudget(6);
-  const allowVerification = requestBudget(12);
   const allowBraintreeToken = requestBudget(12);
   const allowBraintreeCheckout = requestBudget(6);
+  // Per-instance IP limit; configure a shared store/WAF for cross-instance enforcement.
+  const paypalVerificationRateLimit = rateLimit({
+    windowMs: 60_000,
+    limit: 12,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    handler: (req, res) => res.status(429).json({ error: 'Sandbox verification is busy. Try again in a minute.' }),
+  });
 
   app.disable('x-powered-by');
   app.use((req, res, next) => {
@@ -174,7 +182,7 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
     }
   });
 
-  app.post('/api/paypal/sandbox/verify', async (req, res) => {
+  app.post('/api/paypal/sandbox/verify', paypalVerificationRateLimit, async (req, res) => {
     res.set('Cache-Control', 'no-store');
     if (!integrations.paypalConfigured) return res.status(503).json({ error: 'PayPal Sandbox credentials are not configured.' });
 
@@ -183,7 +191,6 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
     if (typeof orderId !== 'string' || !/^[A-Z0-9]{1,36}$/.test(orderId) || !nonce) {
       return res.status(400).json({ error: 'This checkout return is invalid or has expired. Start a new sandbox order.' });
     }
-    if (!allowVerification()) return res.status(429).json({ error: 'Sandbox verification is busy. Try again in a minute.' });
     try {
       const order = await integrations.verifySandboxOrder(orderId, nonce);
       if (!order) return res.status(422).json({ error: 'PayPal did not return a matching USD $1 sandbox order.' });
