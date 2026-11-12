@@ -166,8 +166,6 @@ function createTradingGuard({ ownerPin = process.env.OWNER_PIN, now = () => new 
       const tradeHash = payloadHash(trade);
       const existing = input.approvalId && approvals.get(input.approvalId);
       if (existing && existing.status === 'approved' && !existing.consumed && safeEqual(existing.payloadHash, tradeHash)) {
-        existing.consumed = true;
-        appendEvent('approval.consumed', { approvalId: existing.id, payloadHash: tradeHash });
         decision = 'ALLOW';
         reasons.push('Exact trade payload was approved by the owner.');
       } else if (!existing) {
@@ -197,6 +195,16 @@ function createTradingGuard({ ownerPin = process.env.OWNER_PIN, now = () => new 
     };
   }
 
+  function consumeApproval({ approvalId, payloadHash: suppliedHash }) {
+    const item = approvals.get(approvalId);
+    if (!item || item.status !== 'approved' || item.consumed || !safeEqual(suppliedHash, item.payloadHash)) {
+      return { ok: false, error: 'Approval is missing, already consumed, or does not match this trade.' };
+    }
+    item.consumed = true;
+    appendEvent('approval.consumed', { approvalId, payloadHash: item.payloadHash });
+    return { ok: true };
+  }
+
   function recordFill(trade) {
     resetDailyWindow();
     dailyNotional += trade.notional;
@@ -224,7 +232,7 @@ function createTradingGuard({ ownerPin = process.env.OWNER_PIN, now = () => new 
     };
   }
 
-  return { evaluate, approve, setKillSwitch, getStatus, recordFill };
+  return { evaluate, approve, consumeApproval, setKillSwitch, getStatus, recordFill };
 }
 
 module.exports = { createTradingGuard, canonicalJson };
