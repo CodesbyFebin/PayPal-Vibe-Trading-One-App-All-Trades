@@ -122,6 +122,11 @@ test('AgentPaL Guard signs its mandate and denies symbols and prompt-injection i
   });
   assert.equal(injection.status, 403);
   assert.equal((await injection.json()).guard.decision, 'DENY');
+
+  const hardCap = await post('paper', { action: 'BUY', symbol: 'BTC-USDT', qty: 0.11 });
+  assert.equal(hardCap.status, 403);
+  assert.equal((await hardCap.json()).guard.decision, 'DENY');
+  assert.equal((await (await fetch(origin + '/api/guard/status')).json()).audit.chainValid, true);
 });
 
 test('large paper orders require exact-payload owner approval before execution', async () => {
@@ -147,11 +152,21 @@ test('large paper orders require exact-payload owner approval before execution',
     }, { 'x-owner-pin': 'incorrect-pin' });
     assert.equal(wrongPin.status, 401);
 
+    const wrongHash = await call('guard/approve', {
+      approvalId: pending.guard.approval.approvalId,
+      payloadHash: '0'.repeat(64),
+    }, { 'x-owner-pin': ownerPin });
+    assert.equal(wrongHash.status, 409);
+
     const approved = await call('guard/approve', {
       approvalId: pending.guard.approval.approvalId,
       payloadHash: pending.guard.approval.payloadHash,
     }, { 'x-owner-pin': ownerPin });
     assert.equal(approved.status, 200);
+
+    const alteredPayload = await call('paper', { ...trade, qty: 0.051, approvalId: pending.guard.approval.approvalId });
+    assert.equal(alteredPayload.status, 403);
+    assert.equal((await alteredPayload.json()).guard.decision, 'DENY');
 
     const executed = await call('paper', { ...trade, approvalId: pending.guard.approval.approvalId });
     assert.equal(executed.status, 200);
