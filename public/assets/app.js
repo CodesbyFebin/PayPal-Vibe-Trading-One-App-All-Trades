@@ -128,6 +128,28 @@ demoForm('sandbox', async (fields, result) => {
   result.querySelector('#sandbox-approval').href = data.approvalUrl;
 });
 
+const BRAINTREE_DROPIN_SRC = 'https://js.braintreegateway.com/web/dropin/1.46.0/js/dropin.min.js';
+let braintreeScriptPromise;
+
+function loadBraintreeDropin() {
+  if (window.braintree && window.braintree.dropin) return Promise.resolve();
+  if (braintreeScriptPromise) return braintreeScriptPromise;
+  braintreeScriptPromise = new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-braintree-dropin]');
+    const script = existing || document.createElement('script');
+    script.src = BRAINTREE_DROPIN_SRC;
+    script.async = true;
+    script.dataset.braintreeDropin = 'true';
+    script.addEventListener('load', () => resolve(), { once: true });
+    script.addEventListener('error', () => {
+      braintreeScriptPromise = null;
+      reject(new Error('Braintree secure checkout library did not load. Reload the page and retry.'));
+    }, { once: true });
+    if (!existing) document.head.appendChild(script);
+  });
+  return braintreeScriptPromise;
+}
+
 const braintreeForm = document.getElementById('braintree-checkout');
 if (braintreeForm) {
   const braintreeButton = document.getElementById('braintree-submit');
@@ -137,16 +159,22 @@ if (braintreeForm) {
 
   async function initializeBraintree() {
     try {
-      if (!window.braintree || !window.braintree.dropin) {
-        throw new Error('Braintree secure checkout library did not load. Reload the page and retry.');
-      }
       const tokenResponse = await request('/api/braintree/client-token', {});
+      await loadBraintreeDropin();
+      if (!window.braintree || !window.braintree.dropin) {
+        throw new Error('Braintree secure checkout library did not initialize.');
+      }
       if (tokenResponse.mode !== 'sandbox' || typeof tokenResponse.clientToken !== 'string') {
         throw new Error('Braintree Sandbox did not return a valid client token.');
       }
       braintreeDropin = await window.braintree.dropin.create({
         authorization: tokenResponse.clientToken,
         container: '#braintree-dropin',
+        paypal: {
+          flow: 'checkout',
+          amount: '1.00',
+          currency: 'USD',
+        },
       });
       braintreeButton.disabled = false;
       braintreeButton.textContent = 'Submit USD $1.00 Sandbox transaction';
@@ -181,6 +209,8 @@ if (braintreeForm) {
       braintreeResult.hidden = false;
       braintreeStatus.textContent = 'Braintree Sandbox transaction submitted. Confirm its final state in the Sandbox Control Panel.';
       braintreeButton.textContent = 'Sandbox transaction submitted';
+      await braintreeDropin.teardown();
+      braintreeDropin = null;
     } catch (error) {
       braintreeStatus.dataset.error = '';
       braintreeStatus.textContent = error instanceof TypeError
@@ -191,6 +221,9 @@ if (braintreeForm) {
   });
 
   initializeBraintree();
+  window.addEventListener('pagehide', () => {
+    if (braintreeDropin) braintreeDropin.teardown().catch(() => undefined);
+  }, { once: true });
 }
 
 const idea = document.getElementById('feeling');
