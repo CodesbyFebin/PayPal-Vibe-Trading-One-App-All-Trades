@@ -1,5 +1,6 @@
 const { createAi } = require('./ai');
 const { createPayPal } = require('./paypal');
+const { createBraintree } = require('./braintree');
 
 function configuredOrigin(value) {
   const url = new URL(value);
@@ -10,7 +11,7 @@ function configuredOrigin(value) {
   return url;
 }
 
-function createIntegrations({ env = process.env, request = fetch } = {}) {
+function createIntegrations({ env = process.env, request = fetch, gatewayFactory } = {}) {
   async function jsonRequest(url, init) {
     const result = await request(url, { ...init, redirect: 'error', signal: AbortSignal.timeout(10_000) });
     if (!result.ok) throw new Error('Integration request failed.');
@@ -18,7 +19,7 @@ function createIntegrations({ env = process.env, request = fetch } = {}) {
   }
 
   const dependencies = { env, jsonRequest, configuredOrigin };
-  return { ...createAi(dependencies), ...createPayPal(dependencies) };
+  return { ...createAi(dependencies), ...createPayPal(dependencies), ...createBraintree({ env, gatewayFactory }) };
 }
 
 module.exports = { createIntegrations };

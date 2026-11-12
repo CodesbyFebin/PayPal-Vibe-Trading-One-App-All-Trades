@@ -219,3 +219,131 @@ test('PayPal return verifies the app order without authorizing or exposing buyer
     assert.equal((await post('paypal/sandbox/verify', { orderId, state: returnState })).status, 422);
   });
 });
+
+
+test('Braintree Sandbox returns a client token and charges only a server-fixed USD $1.00 nonce transaction', async () => {
+  let gatewayConfig;
+  let tokenCalls = 0;
+  let saleArgs;
+  const gatewayFactory = config => {
+    gatewayConfig = config;
+    return {
+      clientToken: {
+        generate: async options => {
+          tokenCalls++;
+          assert.deepEqual(options, {});
+          return { clientToken: 'test-braintree-client-token' };
+        },
+      },
+      transaction: {
+        sale: async options => {
+          saleArgs = options;
+          return {
+            success: true,
+            transaction: {
+              id: 'sandbox-txn-123',
+              status: 'submitted_for_settlement',
+              amount: '1.00',
+              currencyIsoCode: 'USD',
+              type: 'sale',
+              createdAt: new Date('2026-11-13T00:00:00.000Z'),
+              creditCard: { last4: '1111' },
+              customer: { email: 'must-not-be-returned@example.invalid' },
+            },
+          };
+        },
+      },
+    };
+  };
+  const integrations = createIntegrations({
+    env: {
+      BRAINTREE_ENV: 'sandbox',
+      BRAINTREE_MERCHANT_ID: 'test-merchant',
+      BRAINTREE_PUBLIC_KEY: 'test-public',
+      BRAINTREE_PRIVATE_KEY: 'test-private',
+    },
+    gatewayFactory,
+  });
+
+  await withApp(integrations, async post => {
+    const tokenResponse = await post('braintree/client-token', {});
+    assert.equal(tokenResponse.status, 200);
+    assert.equal(tokenResponse.headers.get('cache-control'), 'no-store');
+    assert.deepEqual(await tokenResponse.json(), {
+      mode: 'sandbox',
+      clientToken: 'test-braintree-client-token',
+    });
+
+    assert.equal((await post('braintree/checkout', {})).status, 400);
+    const response = await post('braintree/checkout', {
+      paymentMethodNonce: 'fake-valid-nonce',
+      deviceData: '{"correlation_id":"test-device"}',
+      amount: '9999.99',
+    });
+    assert.equal(response.status, 201);
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    assert.deepEqual(await response.json(), {
+      mode: 'sandbox',
+      id: 'sandbox-txn-123',
+      status: 'submitted_for_settlement',
+      amount: '1.00',
+      currencyIsoCode: 'USD',
+      type: 'sale',
+      createdAt: '2026-11-13T00:00:00.000Z',
+    });
+  });
+
+  assert.deepEqual(gatewayConfig, {
+    environment: 'sandbox',
+    merchantId: 'test-merchant',
+    publicKey: 'test-public',
+    privateKey: 'test-private',
+  });
+  assert.equal(tokenCalls, 1);
+  assert.equal(saleArgs.amount, '1.00');
+  assert.equal(saleArgs.paymentMethodNonce, 'fake-valid-nonce');
+  assert.equal(saleArgs.deviceData, '{"correlation_id":"test-device"}');
+  assert.deepEqual(saleArgs.options, { submitForSettlement: true });
+});
+
+test('Braintree is disabled unless all credentials are present and Sandbox is explicitly selected', async () => {
+  const integrations = createIntegrations({
+    env: {
+      BRAINTREE_ENV: 'production',
+      BRAINTREE_MERCHANT_ID: 'merchant',
+      BRAINTREE_PUBLIC_KEY: 'public',
+      BRAINTREE_PRIVATE_KEY: 'private',
+    },
+    gatewayFactory: () => {
+      throw new Error('Production gateway must never be created.');
+    },
+  });
+  await withApp(integrations, async post => {
+    const token = await post('braintree/client-token', {});
+    assert.equal(token.status, 503);
+    const checkout = await post('braintree/checkout', { paymentMethodNonce: 'fake-valid-nonce' });
+    assert.equal(checkout.status, 503);
+  });
+});
+
+test('Braintree transaction declines are sanitized and never return provider objects', async () => {
+  const integrations = createIntegrations({
+    env: {
+      BRAINTREE_ENV: 'sandbox',
+      BRAINTREE_MERCHANT_ID: 'merchant',
+      BRAINTREE_PUBLIC_KEY: 'public',
+      BRAINTREE_PRIVATE_KEY: 'private',
+    },
+    gatewayFactory: () => ({
+      clientToken: { generate: async () => ({ clientToken: 'token' }) },
+      transaction: { sale: async () => ({ success: false, message: 'private gateway detail', transaction: null }) },
+    }),
+  });
+  await withApp(integrations, async post => {
+    const response = await post('braintree/checkout', { paymentMethodNonce: 'fake-valid-nonce' });
+    assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), {
+      error: 'Braintree Sandbox did not approve the test transaction.',
+    });
+  });
+});

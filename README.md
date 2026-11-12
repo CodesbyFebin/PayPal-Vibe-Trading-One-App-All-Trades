@@ -4,7 +4,7 @@
 
 ## Run locally
 
-Requires Node.js 20 or later. The sample-data walkthrough runs without credentials. See the integration setup below for the PayPal Sandbox and AI paths.
+Requires Node.js 20 or later. The sample-data walkthrough runs without credentials. See the integration setup below for the Braintree Sandbox and AI paths.
 
 ```sh
 npm ci
@@ -21,13 +21,15 @@ The repository also has a Vercel Express entry point. The service can run on Ren
 
 ### Vercel Production credentials — judging verification
 
-The main remaining judging gap is a live, hosted provider verification run. The Vercel project `paypal-vibe-trading` needs these variables in **Settings → Environment Variables**, targeted to **Production**:
+The Braintree Sandbox checkout is the primary payment demo. The Vercel project `paypal-vibe-trading` needs these variables in **Settings → Environment Variables**, targeted to **Production**:
 
-- `PAYPAL_CLIENT_ID` — from a PayPal **Sandbox** app
-- `PAYPAL_CLIENT_SECRET` — from the same PayPal Sandbox app
+- `BRAINTREE_ENV=sandbox`
+- `BRAINTREE_MERCHANT_ID`
+- `BRAINTREE_PUBLIC_KEY`
+- `BRAINTREE_PRIVATE_KEY`
 - Either `GEMINI_API_KEY` or `OPENAI_API_KEY` — for the AI provider check
 
-Add the values directly in the Vercel dashboard. Do not put credentials in GitHub, source files, issue comments, logs, or ChatGPT. Mark the values as sensitive/encrypted where Vercel offers that option. Keep PayPal credentials in Sandbox; this project does not use the PayPal production API.
+Add the values directly in the Vercel dashboard. Do not put credentials in GitHub, source files, issue comments, logs, or ChatGPT. Mark private values as sensitive/encrypted where Vercel offers that option. Braintree production mode is deliberately rejected by this demo. PayPal REST remains optional and still requires separate PayPal Sandbox Client ID and Secret credentials.
 
 After saving the variables, redeploy the Production environment so the running deployment receives them. Then verify:
 
@@ -59,6 +61,23 @@ npm test
 
 The test suite checks the served pages, portfolio choices, backtest values, paper fills, SIP simulation, and invalid request handling. The [hackathon release](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/releases/tag/v1.0-hackathon) preserves the original packaged submission build.
 
+## Braintree Sandbox checkout (primary payment demo)
+
+The checkout uses the official Braintree Node SDK and Braintree Drop-in UI. The browser collects payment details through Braintree-hosted fields; this app receives only a tokenized payment-method nonce. The server creates a Braintree client token and submits a fixed **USD $1.00 Sandbox transaction** for settlement. No card number, CVV, or expiry is accepted by this app's API.
+
+1. Copy `.env.example` to `.env`.
+2. Set `BRAINTREE_ENV=sandbox`, `BRAINTREE_MERCHANT_ID`, `BRAINTREE_PUBLIC_KEY`, and `BRAINTREE_PRIVATE_KEY` using the credentials from your Braintree Sandbox Control Panel.
+3. Start with `npm ci && npm run dev`.
+4. Open the home page, wait for the Braintree Drop-in form to initialize, and submit a Sandbox test payment method.
+5. The app returns only the transaction ID, status, amount, currency, and type. Confirm the same transaction in the Braintree Sandbox Control Panel.
+
+API:
+- `POST /api/braintree/client-token` — returns a short-lived Braintree client token when Sandbox credentials are configured.
+- `POST /api/braintree/checkout` — accepts `paymentMethodNonce` and optional `deviceData`; the amount is server-fixed at USD $1.00 and cannot be supplied by the browser.
+- `GET /api/demo/status` — reports whether Braintree Sandbox credentials are present without exposing them.
+
+The service is fail-closed: `BRAINTREE_ENV=production` is not supported. The checkout is a Sandbox-only test and does not move real money. Automated tests mock the SDK boundary; a real provider transaction remains **not yet verified** until a credentialed Sandbox run is observed in the Braintree Control Panel.
+
 ## PayPal Sandbox and AI setup
 
 The PayPal Orders flow and OpenAI-compatible Chat Completions client are adapted from [PayPal-Vibe](https://github.com/CodesbyFebin/PayPal-Vibe/tree/e32bb2f5b9d81bed5111c1d6fb482848109b1780).
@@ -66,7 +85,7 @@ The PayPal Orders flow and OpenAI-compatible Chat Completions client are adapted
 1. Copy `.env.example` to `.env`. Set `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` from a PayPal **Sandbox** application and set either `GEMINI_API_KEY` or `OPENAI_API_KEY`. For a custom OpenAI-compatible provider, use `AI_API_KEY`, `AI_BASE_URL`, and `AI_MODEL`. If both named keys are configured, Gemini takes priority. Keep credentials server-side.
 2. Run `npm ci`, then `node --env-file=.env server/index.js`. On a hosted instance, set `APP_URL` to the application's HTTPS origin and supply credentials through the host's environment settings.
 3. Open [Vibe It](http://localhost:3000/), keep **From prompt** selected, and preview a portfolio. **AI-selected mode** means the configured model returned a recognized mode. **Rule-based demo mode** means the fallback supplied it.
-4. Choose **Try the $1 PayPal Sandbox checkout**, then **Create sandbox order**. The server creates a fixed USD $1 order against the Sandbox Orders API. Open PayPal Sandbox using a sandbox buyer account. On return, the app verifies the signed checkout state and reads the matching order status from PayPal. The app never authorizes or captures the order.
+4. Use the Braintree Sandbox checkout on the home page. The separate PayPal REST Sandbox flow remains optional. The server creates a fixed USD $1 order against the Sandbox Orders API. Open PayPal Sandbox using a sandbox buyer account. On return, the app verifies the signed checkout state and reads the matching order status from PayPal. The app never authorizes or captures the order.
 
 For direct live verification after loading the private `.env`:
 

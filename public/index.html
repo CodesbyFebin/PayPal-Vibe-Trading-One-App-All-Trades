@@ -7,6 +7,7 @@
   <title>Vibe It | PayPal Vibe Trading</title>
   <link rel="icon" type="image/svg+xml" href="/assets/vibe-icon.svg">
   <link rel="stylesheet" href="/assets/app.css">
+  <script src="https://js.braintreegateway.com/web/dropin/1.45.2/js/dropin.min.js" defer></script>
   <script src="/assets/app.js" defer></script>
 </head>
 <body>
@@ -26,7 +27,7 @@
       <div class="hero-copy">
         <p class="eyebrow">PayPal AI Hackathon</p>
         <h1>One Vibe. Every Trade.</h1>
-        <p>Turn a market idea into an illustrative allocation, test the strategy, and preview a $1 PayPal Sandbox checkout.</p>
+        <p>Turn a market idea into an illustrative allocation, test the strategy, and preview a $1 Braintree Sandbox checkout.</p>
         <a class="button" href="#vibe-it">Preview an allocation</a>
       </div>
       <img class="hero-art" src="/assets/vibe-mascot.webp" width="1120" height="625" alt="">
@@ -34,7 +35,7 @@
     <nav class="journey" aria-label="Demo walkthrough">
       <a href="#vibe-it"><strong>Choose a vibe</strong><span>Explore an allocation</span></a>
       <a href="/webapp/"><strong>Test the strategy</strong><span>See a sample equity curve</span></a>
-      <a href="#sandbox-checkout"><strong>Preview checkout</strong><span>Open PayPal Sandbox</span></a>
+      <a href="#sandbox-checkout"><strong>Preview checkout</strong><span>Test Braintree Sandbox</span></a>
     </nav>
     <p id="integration-status" class="integration-status" hidden aria-live="polite"></p>
     <section class="panel" id="vibe-it" aria-labelledby="vibe-heading">
@@ -73,20 +74,37 @@
         </dl>
         <div class="result-links">
           <a href="/webapp/">Continue to the Backtest Lab</a>
-          <a href="#sandbox-checkout">Try the $1 PayPal Sandbox checkout</a>
+          <a href="#sandbox-checkout">Try the $1 Braintree Sandbox checkout</a>
         </div>
       </div>
     </section>
     <section class="panel" id="sandbox-checkout" aria-labelledby="checkout-heading">
-      <h2 id="checkout-heading">$1 PayPal Sandbox checkout</h2>
-      <p>Create a USD $1 test order and open PayPal Sandbox. This demo creates the order and lets you preview buyer approval. It does not authorize or capture a payment.</p>
+      <h2 id="checkout-heading">$1 Braintree Sandbox checkout</h2>
+      <p>Use a Braintree Sandbox test payment method. Payment details are collected by Braintree's hosted Drop-in UI; this app receives a payment-method nonce, not raw card details. The server submits a fixed USD $1.00 test transaction.</p>
+      <form id="braintree-checkout">
+        <div id="braintree-dropin" aria-label="Braintree secure payment form"></div>
+        <button id="braintree-submit" type="submit" disabled>Initialize Sandbox checkout…</button>
+      </form>
+      <p id="braintree-status" class="feedback" role="status" aria-live="polite">Checking Braintree Sandbox configuration…</p>
+      <div id="braintree-result" class="result" hidden>
+        <p>Sandbox transaction <strong id="braintree-transaction-id"></strong></p>
+        <dl class="metrics">
+          <div><dt>Status</dt><dd id="braintree-transaction-status"></dd></div>
+          <div><dt>Amount</dt><dd id="braintree-transaction-amount"></dd></div>
+          <div><dt>Currency</dt><dd id="braintree-transaction-currency"></dd></div>
+        </dl>
+      </div>
+    </section>
+    <section class="panel" aria-labelledby="paypal-optional-heading">
+      <h2 id="paypal-optional-heading">Optional PayPal REST Sandbox</h2>
+      <p>This separate legacy integration still requires PayPal Sandbox REST Client ID and Secret credentials. Braintree credentials cannot be used here.</p>
       <p id="sandbox-return" class="feedback" role="status" hidden></p>
       <form id="sandbox">
-        <button type="submit" disabled>Create sandbox order</button>
+        <button type="submit" disabled>Create PayPal Sandbox order</button>
       </form>
       <p id="sandbox-status" class="feedback" role="status"></p>
       <div id="sandbox-result" class="result" hidden>
-        <p>Sandbox order <strong data-value="orderId"></strong></p>
+        <p>PayPal Sandbox order <strong data-value="orderId"></strong></p>
         <a id="sandbox-approval" class="button">Open PayPal Sandbox</a>
       </div>
     </section>
