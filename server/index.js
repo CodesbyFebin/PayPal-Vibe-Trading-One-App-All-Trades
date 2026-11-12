@@ -64,7 +64,43 @@ function createApp({ integrations = createIntegrations(), app = express() } = {}
 
   app.get('/api/demo/status', (req, res) => {
     res.set('Cache-Control', 'no-store');
-    res.json({ paypalSandbox: integrations.paypalConfigured, runtimeAi: integrations.aiConfigured });
+    res.json({
+      paypalSandbox: integrations.paypalConfigured,
+      braintreeSandbox: integrations.braintreeConfigured,
+      runtimeAi: integrations.aiConfigured,
+    });
+  });
+
+  app.post('/api/braintree/client-token', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    if (!integrations.braintreeConfigured) return res.status(503).json({ error: 'Braintree Sandbox credentials are not configured.' });
+    if (!allowBraintreeToken()) return res.status(429).json({ error: 'Braintree token service is busy. Try again in a minute.' });
+    try {
+      const clientToken = await integrations.createClientToken();
+      res.json({ mode: 'sandbox', clientToken });
+    } catch {
+      res.status(502).json({ error: 'Braintree Sandbox could not create a client token.' });
+    }
+  });
+
+  app.post('/api/braintree/checkout', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    if (!integrations.braintreeConfigured) return res.status(503).json({ error: 'Braintree Sandbox credentials are not configured.' });
+    const paymentMethodNonce = req.body.paymentMethodNonce;
+    const deviceData = req.body.deviceData;
+    if (typeof paymentMethodNonce !== 'string' || !paymentMethodNonce.trim() || paymentMethodNonce.length > 2048
+      || /[\u0000-\u001f\u007f]/.test(paymentMethodNonce)
+      || (deviceData !== undefined && (typeof deviceData !== 'string' || deviceData.length > 16000))) {
+      return res.status(400).json({ error: 'A valid tokenized payment method nonce is required.' });
+    }
+    if (!allowBraintreeCheckout()) return res.status(429).json({ error: 'Braintree checkout is busy. Try again in a minute.' });
+    try {
+      const result = await integrations.createSandboxTransaction(paymentMethodNonce.trim(), deviceData);
+      if (!result.success) return res.status(422).json({ error: 'Braintree Sandbox did not approve the test transaction.' });
+      res.status(201).json({ mode: 'sandbox', ...result.transaction });
+    } catch {
+      res.status(502).json({ error: 'Braintree Sandbox could not process the test transaction.' });
+    }
   });
 
   app.post('/api/vibe', async (req, res) => {
