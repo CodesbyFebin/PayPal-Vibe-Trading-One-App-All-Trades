@@ -63,7 +63,7 @@ The test suite checks the served pages, portfolio choices, backtest values, pape
 
 ## Braintree Sandbox checkout (primary payment demo)
 
-The checkout uses the official Braintree Node SDK and Braintree Drop-in UI. The browser collects payment details through Braintree-hosted fields; this app receives only a tokenized payment-method nonce. The server creates a Braintree client token and submits a fixed **USD $1.00 Sandbox transaction** for settlement. No card number, CVV, or expiry is accepted by this app's API.
+The checkout uses the official Braintree Node SDK and Braintree Drop-in UI (Drop-in Web 1.46.0). The browser collects payment details through Braintree-hosted Drop-in; this app receives only a tokenized payment-method nonce. The Drop-in also offers its PayPal wallet option when that feature is enabled for the Braintree Sandbox merchant. The server creates a Braintree client token and submits a fixed **USD $1.00 Sandbox transaction** for settlement. No card number, CVV, or expiry is accepted by this app's API.
 
 1. Copy `.env.example` to `.env`.
 2. Set `BRAINTREE_ENV=sandbox`, `BRAINTREE_MERCHANT_ID`, `BRAINTREE_PUBLIC_KEY`, and `BRAINTREE_PRIVATE_KEY` using the credentials from your Braintree Sandbox Control Panel.

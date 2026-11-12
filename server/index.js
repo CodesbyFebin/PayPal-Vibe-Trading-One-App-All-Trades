@@ -50,7 +50,7 @@ function createApp({ integrations = createIntegrations(), app = express() } = {}
   app.use((req, res, next) => {
     res.set('X-Content-Type-Options', 'nosniff');
     res.set('Referrer-Policy', 'no-referrer');
-    res.set('Content-Security-Policy', "default-src 'self'; script-src 'self' https://js.braintreegateway.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.braintreegateway.com; font-src 'self' data: https://*.braintreegateway.com; connect-src 'self' https://*.braintreegateway.com https://*.braintree-api.com; frame-src https://assets.braintreegateway.com https://*.braintreegateway.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
+    res.set('Content-Security-Policy', "default-src 'self'; script-src 'self' https://js.braintreegateway.com https://www.paypal.com https://*.paypal.com https://*.paypalobjects.com https://*.braintreegateway.com https://*.braintree-api.com; style-src 'self' 'unsafe-inline' https://*.braintreegateway.com; img-src 'self' data: blob: https://*.paypal.com https://*.paypalobjects.com https://*.braintreegateway.com; font-src 'self' data: https://*.braintreegateway.com; connect-src 'self' https://*.paypal.com https://*.paypalobjects.com https://*.braintreegateway.com https://*.braintree-api.com; frame-src https://*.paypal.com https://*.braintreegateway.com https://*.cardinalcommerce.com; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self' https://*.paypal.com");
     next();
   });
 

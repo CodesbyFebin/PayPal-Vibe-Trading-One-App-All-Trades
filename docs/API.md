@@ -9,7 +9,7 @@ Base URL: `http://localhost:3000/api`. Send JSON objects for POST requests. Opti
 | `POST /vibe` | `feeling` (default `I feel bullish on AI`), `mode` (Safe, Balanced, or Bold), `useAI` (optional opt-in) | Prompt, selected or inferred mode, sample portfolio percentages, and the source when automatic AI selection was requested |
 | `POST /vibe-ai` | `feeling` (same default as Vibe It) | AI mode, reason, provider, and allocation. Returns 503 if no AI provider is configured. |
 | `POST /braintree/client-token` | None | Braintree Sandbox client token, or HTTP 503 when Sandbox credentials are absent |
-| `POST /braintree/checkout` | `paymentMethodNonce`, optional `deviceData` | Fixed USD $1.00 Braintree Sandbox transaction result; amount is server-controlled |
+| `POST /braintree/checkout` | `paymentMethodNonce`, optional `deviceData` | Fixed USD $1.00 Braintree Sandbox transaction result; amount is server-controlled. Hosted Drop-in can expose the PayPal wallet when enabled for the merchant |
 | `POST /paypal/create-order` | `amount` (fixed at USD `1.00`) | Optional PayPal Sandbox order ID, provider status, and approval URL |
 | `POST /paypal/sandbox/order` | None | Optional PayPal Sandbox order ID and approval URL, or HTTP 503 when credentials are absent |
 | `POST /paypal/sandbox/verify` | Return `orderId` and signed `state` | Reads the status of a matching Sandbox order from PayPal |
