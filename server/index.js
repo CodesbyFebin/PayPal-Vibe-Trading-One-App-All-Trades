@@ -41,8 +41,8 @@ function requestBudget(max) {
 
 function createApp({ integrations = createIntegrations(), app = express() } = {}) {
   const guard = createTradingGuard({ ownerPin: process.env.OWNER_PIN });
-  const paperAccount = { cashCents: 108422, positions: Object.create(null) };
-  const paperPrice = 97240; // Explicit fixture price; no live market feed.
+  const paperAccount = { cashCents: 1_000_000, positions: Object.create(null) };
+  const paperPrices = { 'BTC-USDT': 97240, 'ETH-USDT': 3450 }; // Fixed fixtures; no live market feed.
   const allowGuardControl = requestBudget(12);
   const allowAi = requestBudget(12);
   const allowOrder = requestBudget(6);
@@ -249,7 +249,8 @@ function createApp({ integrations = createIntegrations(), app = express() } = {}
       return res.status(400).json({ error: 'Enter an allowed symbol, BUY or SELL, and a positive quantity.' });
     }
 
-    const decision = guard.evaluate({ action, symbol, qty, price: paperPrice, context, ...(approvalId ? { approvalId } : {}) });
+    const price = paperPrices[symbol];
+    const decision = guard.evaluate({ action, symbol, qty, price, context, ...(approvalId ? { approvalId } : {}) });
     if (decision.decision === 'DENY') {
       return res.status(403).json({ error: 'Trading Guard denied this paper trade.', guard: decision });
     }
@@ -257,7 +258,7 @@ function createApp({ integrations = createIntegrations(), app = express() } = {}
       return res.status(202).json({ message: 'Owner approval is required before this paper trade can execute.', guard: decision });
     }
 
-    const notional = Number((qty * paperPrice).toFixed(2));
+    const notional = Number((qty * price).toFixed(2));
     const fee = Number((notional * 0.001).toFixed(2));
     const currentQty = paperAccount.positions[symbol] || 0;
     if (action === 'BUY') {
@@ -277,12 +278,12 @@ function createApp({ integrations = createIntegrations(), app = express() } = {}
     }
 
     const positionValue = Object.entries(paperAccount.positions).reduce((total, [asset, amount]) => {
-      return total + amount * (asset === symbol ? paperPrice : paperPrice);
+      return total + amount * (paperPrices[asset] || 0);
     }, 0);
     const nav = Number((paperAccount.cashCents / 100 + positionValue).toFixed(2));
     guard.recordFill({ action, symbol, qty, notional });
     res.json({
-      fill: { action, symbol, qty, price: paperPrice, notional, fee, feeRateBps: 10, priceSource: 'fixed-demo-fixture' },
+      fill: { action, symbol, qty, price, notional, fee, feeRateBps: 10, priceSource: 'fixed-demo-fixture' },
       account: { cash: Number((paperAccount.cashCents / 100).toFixed(2)), positions: paperAccount.positions, nav },
       nav,
       guard: { decision: 'ALLOW', reasons: decision.reasons },
