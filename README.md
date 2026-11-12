@@ -63,6 +63,31 @@ npm test
 
 The test suite checks served pages, AI/portfolio behavior, backtest fixtures, guarded paper fills, position accounting, simulated fees, Ed25519 mandate verification, prompt-injection denial, exact-payload approval, owner kill switch, audit-chain integrity, PayPal/Braintree mocked boundaries, SIP simulation, and invalid request handling. The [hackathon release](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/releases/tag/v1.0-hackathon) preserves the original packaged submission build. See [Judge Readiness](docs/JUDGING.md), the [three-minute demo script](docs/DEMO-SCRIPT.md), and [API reference](docs/API.md) for verification steps.
 
+## Historical-data Strategy Lab
+
+The premium Backtest Lab accepts a chronological series of historical closing prices and runs a deterministic long-only SMA crossover simulation. The engine supports configurable fast/slow windows, starting capital, and per-side fees; it reports ending equity, total return, annualized daily-observation Sharpe estimate, maximum drawdown, closed-trade win rate, and the equity curve. Signals are calculated from the current close and exposure is applied to the following close-to-close interval to avoid using future bars.
+
+This engine does **not** fetch market data. Users must supply at least 60 valid positive closes (up to 2,000). The output is hypothetical and excludes slippage, taxes, funding, dividends, corporate actions, and exchange-specific execution constraints. Do not treat the metrics as investment advice or evidence of future performance. The legacy fixture endpoint remains available for compatibility; the interactive Backtest Lab now calls `POST /api/backtest/historical`.
+
+Example request:
+
+```json
+{
+  "symbol": "BTC-USDT sample",
+  "prices": [100, 101, 99, 102],
+  "capital": 1000,
+  "fast": 5,
+  "slow": 20,
+  "feeBps": 10
+}
+```
+
+The example price array above is illustrative only and is too short to pass validation.
+
+## Premium trading workspace upgrade
+
+The `feat/premium-trading-lab` branch adds a premium visual pass, a historical-price SMA backtest engine and input validation tests. It also changes owner-approval consumption: an approved trade is consumed only after the paper ledger validates available cash or sell inventory, preventing a failed ledger check from burning the approval. The app remains paper-only and the balances, approvals and audit journal remain process-local until a separately reviewed persistence layer is introduced.
+
 ## AgentPaL Guard — signed, risk-bounded paper execution
 
 The strongest reusable part of the previous [AgentPaL repository](https://github.com/CodesbyFebin/PayPal-Vibe) is its trust model: **the AI may propose; deterministic policy decides; the owner approves; the execution boundary verifies**. This repository now adapts that pattern to paper trading instead of copying AgentPaL's Next.js finance engine into an incompatible Express application.
