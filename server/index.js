@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('node:path');
 const { createIntegrations } = require('./integrations');
 const { createTradingGuard } = require('./guard');
+const { runMovingAverageBacktest } = require('./strategy-engine');
 
 const root = path.join(__dirname, '..');
 const allocations = {
@@ -206,6 +207,21 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
     res.json({ symbol, strategy, returnPct: 24.6, sharpe: 1.72, maxDD: -11.2, winRate: 57, trades: 42, equity });
   });
 
+  app.post('/api/backtest/historical', (req, res) => {
+    const symbol = textField(req.body.symbol, 'CUSTOM', 32);
+    const prices = req.body.prices;
+    const capital = positiveNumber(req.body.capital, 1000);
+    const fast = req.body.fast === undefined ? 20 : Number(req.body.fast);
+    const slow = req.body.slow === undefined ? 50 : Number(req.body.slow);
+    const feeBps = req.body.feeBps === undefined ? 10 : Number(req.body.feeBps);
+    try {
+      const result = runMovingAverageBacktest({ prices, capital, fast, slow, feeBps });
+      res.json({ symbol, ...result });
+    } catch (error) {
+      res.status(400).json({ error: error.message || 'Historical backtest input is invalid.' });
+    }
+  });
+
   app.get('/api/portfolio', (req, res) => {
     res.json({
       holdings: [{ name: 'NIFTY', w: 40 }, { name: 'US AI', w: 30 }, { name: 'Crypto', w: 15 }, { name: 'PYUSD', w: 15 }],
@@ -267,11 +283,19 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
       if (costCents > paperAccount.cashCents) {
         return res.status(409).json({ error: 'Insufficient paper cash for this order including the simulated fee.' });
       }
+      if (approvalId && decision.reasons.some(reason => reason.includes('Exact trade payload was approved'))) {
+        const consumed = guard.consumeApproval({ approvalId, trade: { action, symbol, qty, price, context } });
+        if (!consumed.ok) return res.status(409).json({ error: consumed.error });
+      }
       paperAccount.cashCents -= costCents;
       paperAccount.positions[symbol] = Number((currentQty + qty).toFixed(8));
     } else {
       if (currentQty + 1e-10 < qty) {
         return res.status(409).json({ error: 'Insufficient paper position to sell this quantity.' });
+      }
+      if (approvalId && decision.reasons.some(reason => reason.includes('Exact trade payload was approved'))) {
+        const consumed = guard.consumeApproval({ approvalId, trade: { action, symbol, qty, price, context } });
+        if (!consumed.ok) return res.status(409).json({ error: consumed.error });
       }
       const proceedsCents = Math.round((notional - fee) * 100);
       paperAccount.cashCents += proceedsCents;
