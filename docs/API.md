@@ -6,6 +6,8 @@ Base URL: `http://localhost:3000/api`. Send JSON objects for POST requests. Opti
 | --- | --- | --- |
 | `GET /health` | — | `{"ok":true,"service":"paypal-vibe"}` |
 | `POST /vibe` | `feeling` (default `I feel bullish on AI`), `mode` (Safe, Balanced, or Bold), `useAI` (optional opt-in) | Prompt, selected or inferred mode, sample portfolio percentages, and the source when automatic AI selection was requested |
+| `POST /vibe-ai` | `feeling` (same default as Vibe It) | AI mode, reason, provider, and allocation. Returns 503 if no AI provider is configured. |
+| `POST /paypal/create-order` | `amount` (fixed at USD `1.00`) | Sandbox order ID, provider status, and approval URL. |
 | `POST /paypal/sandbox/order` | None | Sandbox order ID and a PayPal Sandbox approval URL, or HTTP 503 when credentials are absent |
 | `POST /backtest` | `symbol` (BTC-USDT), `strategy` (20/50 MA), `capital` (1000) | Fixture metrics and an equity curve scaled to starting capital |
 | `GET /portfolio` | — | Sample holdings and risk metrics |

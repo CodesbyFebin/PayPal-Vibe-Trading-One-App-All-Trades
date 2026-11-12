@@ -54,7 +54,7 @@ demoForm('vibe', async (fields, result) => {
   const data = await request('/api/vibe', body);
 
   const source = mode ? 'Manually selected mode' : data.source === 'ai' ? 'AI-selected mode' : 'Rule-based demo mode';
-  setValues(result, { mode: data.mode, feeling: data.feeling, source });
+  setValues(result, { mode: data.mode, feeling: data.feeling, source, reason: data.reason || '' });
   for (const [asset, percent] of Object.entries(data.portfolio)) {
     setValues(result, { [asset]: percent + '%' });
   }
