@@ -6,7 +6,7 @@
 
 ## Run locally
 
-Requires Node.js 20 or later. The sample-data walkthrough runs without credentials. See the integration setup below for the Braintree Sandbox and AI paths.
+Requires Node.js 20 or later. The live read-only market walkthrough uses Kraken public market data and runs without exchange credentials. See the integration setup below for the Braintree Sandbox and AI paths.
 
 ```sh
 npm ci
@@ -19,7 +19,7 @@ Open [the local demo](http://localhost:3000). Set `PORT` to use another port. Th
 
 The GitHub Pages workflow publishes the static overview from `public/landing/index.html`. Set the repository Actions variable `WEB_APP_URL` to the hosted app's HTTPS origin to link the landing page to Vibe It, the Web App, and Mobile.
 
-The repository also has a Vercel Express entry point. The service can run on Render as a Node web service with `npm ci` as the build command and `npm start` as the start command. Public demos can run with the sample-data flow and without keys. Paper balances are in memory and can reset when the hosting platform starts a new instance.
+The repository also has a Vercel Express entry point. The service can run on Render as a Node web service with `npm ci` as the build command and `npm start` as the start command. Public demos can run with the sample-data flow and without keys. The paper account, Guard approvals, kill switch, and audit journal are currently process-local and can reset on serverless instance changes; a shared durable database must be configured before claiming cross-instance persistence.
 
 ### Vercel Production credentials — judging verification
 
@@ -46,16 +46,16 @@ Until those hosted checks pass, mark live provider verification **not yet verifi
 
 | Step | Open | Try |
 | --- | --- | --- |
-| Vibe It | [Home](http://localhost:3000/) | Submit “I feel bullish on AI” with **From prompt** selected. The Bold sample allocates 30% US equities, 30% Indian equities, and 40% crypto. Try Safe or Balanced to compare. |
-| Backtest Lab | [Web App](http://localhost:3000/webapp/) | Run the prefilled BTC-USDT 20/50 moving-average example. The fixture shows Sharpe 1.72, max drawdown −11.2%, a 57% win rate, and a sample equity curve. |
-| Guarded paper trading | [Web App](http://localhost:3000/webapp/#paper-heading) | Inspect the signed mandate, submit a small order, request approval for a larger order, approve the exact payload, and test the kill switch. |
+| Vibe It | [Home](http://localhost:3000/) | Submit “I feel bullish on AI” with **From prompt** selected. The Bold sample allocates 30% US equities, 30% Indian equities, and 40% crypto. Live Kraken BTC/ETH quote context is displayed with source and timestamp. Try Safe or Balanced to compare. |
+| Backtest Lab | [Web App](http://localhost:3000/webapp/) | Run the prefilled BTC-USDT 20/50 moving-average example. The server fetches completed Kraken daily candles and calculates returns, Sharpe, drawdown, win rate, and an equity curve using 10 bps per-side simulated fees. Results are not prefilled fixture metrics. |
+| Guarded paper trading | [Web App](http://localhost:3000/webapp/#paper-heading) | Inspect the signed mandate, submit a small paper order at a read-only market quote, request approval for a larger order, approve the exact payload, and test the kill switch. Guard and account state remain process-local until a durable database is configured. |
 | Wallet and SIP | [Mobile](http://localhost:3000/mobile/) | View the $1,084.22 sample wallet and simulate a ₹500 monthly UPI AutoPay contribution. |
 
 For the optional browser companion, open `chrome://extensions` or `edge://extensions`, enable Developer mode, and load the `extension/` folder unpacked. The popup links to the local demo. It requests no browser permissions.
 
 ## Implementation
 
-The demo uses HTML, CSS, JavaScript, and Node.js with Express. Vibe It uses the selected mode, a configured AI classifier, or keyword rules when the model is unavailable. The Chat Agent extracts a supported pair and moving-average window from the prompt and displays deterministic backtest fixtures. The server serves the overview, web app, mobile view, and [JSON API](docs/API.md) from one origin. The paper ledger, signed mandate, approval queue, and audit chain are process-local and reset when the server restarts.
+The demo uses HTML, CSS, JavaScript, and Node.js with Express. Vibe It uses the selected mode, a configured AI classifier, or keyword rules when the model is unavailable. The Chat Agent extracts a supported pair and moving-average window from the prompt and calculates a deterministic backtest from completed daily Kraken candles. The server serves the overview, web app, mobile view, and [JSON API](docs/API.md) from one origin. The paper ledger, signed mandate, approval queue, and audit chain are process-local and reset when the server restarts or the serverless platform routes to another instance. Shared persistence is not yet configured.
 
 ```sh
 npm test
@@ -76,7 +76,7 @@ The strongest reusable part of the previous [AgentPaL repository](https://github
 
 The UI exposes the Guard status, pending approvals, signature validity, daily notional, audit-chain status, and owner controls. Set `OWNER_PIN` to a private value of at least 12 characters in the server environment to enable approvals and kill-switch controls. The PIN is read from the `x-owner-pin` request header and is never shipped to the browser or stored by the page.
 
-**Strict scope:** this is paper-only execution. It has no broker adapter, exchange API keys, live market feed, real order routing, or real-money trading. BTC-USDT and ETH-USDT prices are fixed fixtures. The mandate, approvals, paper ledger, and audit journal are in-memory and reset on process restart. The signature and hash chain are real cryptographic checks, but this is not durable production custody or an independently anchored audit log.
+**Strict scope:** this is paper-only execution. It has no broker adapter, exchange API keys, live market feed, real order routing, or real-money trading. BTC-USDT and ETH-USDT quotes come from Kraken's public read-only market API, with cached fallback labelled stale. The mandate, approvals, paper ledger, and audit journal are in-memory and reset on process restart. The signature and hash chain are real cryptographic checks, but this is not durable production custody or an independently anchored audit log.
 
 ## Braintree Sandbox checkout (primary payment demo)
 
@@ -120,7 +120,7 @@ Automated tests exercise the app with simulated upstream responses and check the
 
 ## Demo boundaries
 
-PayPal Vibe Trading is an independent hackathon concept. Market data, backtests, balances, fills, and AutoPay approvals are illustrative. The optional PayPal connection creates Sandbox preview orders only. The demo uses no broker or live market feed and provides no real Buyer Protection coverage or financial advice.
+PayPal Vibe Trading is an independent hackathon concept. Market data is read-only; paper balances and fills are simulated; backtests are calculated from public historical candles; and AutoPay is a simulation only. The optional PayPal and Braintree connections use Sandbox credentials only. No broker orders, wallet funding, UPI mandate, or real-money payment is created. This is not financial advice.
 
 
 ## Container quick start
