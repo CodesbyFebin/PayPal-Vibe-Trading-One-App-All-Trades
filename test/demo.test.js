@@ -74,6 +74,16 @@ test('Vibe It infers and accepts explicit allocation modes', async () => {
   }
 });
 
+test('market endpoint returns provider source and timestamp metadata', async () => {
+  const response = await fetch(origin + '/api/market/prices');
+  assert.equal(response.status, 200);
+  const data = await response.json();
+  assert.equal(data.source, 'Kraken public market data');
+  assert.equal(data.prices.length, 2);
+  assert.equal(data.prices[0].source, 'test-market-feed');
+  assert.ok(data.prices[0].fetchedAt);
+});
+
 test('backtest calculates deterministic metrics from historical daily candles', async () => {
   const baselineResponse = await post('backtest', {});
   assert.equal(baselineResponse.status, 200);
