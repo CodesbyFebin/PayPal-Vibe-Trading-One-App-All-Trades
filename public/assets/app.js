@@ -128,6 +128,71 @@ demoForm('sandbox', async (fields, result) => {
   result.querySelector('#sandbox-approval').href = data.approvalUrl;
 });
 
+const braintreeForm = document.getElementById('braintree-checkout');
+if (braintreeForm) {
+  const braintreeButton = document.getElementById('braintree-submit');
+  const braintreeStatus = document.getElementById('braintree-status');
+  const braintreeResult = document.getElementById('braintree-result');
+  let braintreeDropin;
+
+  async function initializeBraintree() {
+    try {
+      if (!window.braintree || !window.braintree.dropin) {
+        throw new Error('Braintree secure checkout library did not load. Reload the page and retry.');
+      }
+      const tokenResponse = await request('/api/braintree/client-token', {});
+      if (tokenResponse.mode !== 'sandbox' || typeof tokenResponse.clientToken !== 'string') {
+        throw new Error('Braintree Sandbox did not return a valid client token.');
+      }
+      braintreeDropin = await window.braintree.dropin.create({
+        authorization: tokenResponse.clientToken,
+        container: '#braintree-dropin',
+      });
+      braintreeButton.disabled = false;
+      braintreeButton.textContent = 'Submit USD $1.00 Sandbox transaction';
+      braintreeStatus.textContent = 'Braintree Sandbox is ready. Use a Sandbox test payment method.';
+    } catch (error) {
+      braintreeStatus.dataset.error = '';
+      braintreeStatus.textContent = error instanceof TypeError
+        ? 'The demo server is unavailable. Start the app and retry.'
+        : error.message;
+      braintreeButton.disabled = true;
+      braintreeButton.textContent = 'Sandbox checkout unavailable';
+    }
+  }
+
+  braintreeForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!braintreeDropin || braintreeButton.disabled) return;
+    braintreeButton.disabled = true;
+    braintreeResult.hidden = true;
+    delete braintreeStatus.dataset.error;
+    braintreeStatus.textContent = 'Tokenizing payment details with Braintree…';
+    try {
+      const payment = await braintreeDropin.requestPaymentMethod();
+      const transaction = await request('/api/braintree/checkout', {
+        paymentMethodNonce: payment.nonce,
+        deviceData: payment.deviceData,
+      });
+      document.getElementById('braintree-transaction-id').textContent = transaction.id;
+      document.getElementById('braintree-transaction-status').textContent = transaction.status;
+      document.getElementById('braintree-transaction-amount').textContent = transaction.amount;
+      document.getElementById('braintree-transaction-currency').textContent = transaction.currencyIsoCode;
+      braintreeResult.hidden = false;
+      braintreeStatus.textContent = 'Braintree Sandbox transaction submitted. Confirm its final state in the Sandbox Control Panel.';
+      braintreeButton.textContent = 'Sandbox transaction submitted';
+    } catch (error) {
+      braintreeStatus.dataset.error = '';
+      braintreeStatus.textContent = error instanceof TypeError
+        ? 'The demo server is unavailable. Check the server and retry.'
+        : error.message;
+      braintreeButton.disabled = false;
+    }
+  });
+
+  initializeBraintree();
+}
+
 const idea = document.getElementById('feeling');
 for (const button of document.querySelectorAll('[data-prompt]')) {
   button.addEventListener('click', () => {
@@ -143,8 +208,8 @@ if (integrationStatus) {
     return response.json();
   }).then(status => {
     const ai = status.runtimeAi ? 'AI provider configured' : 'Rule-based portfolio demo';
-    const paypal = status.paypalSandbox ? 'PayPal Sandbox configured' : 'PayPal Sandbox setup required';
-    integrationStatus.textContent = ai + ' · ' + paypal;
+    const braintree = status.braintreeSandbox ? 'Braintree Sandbox configured' : 'Braintree Sandbox setup required';
+    integrationStatus.textContent = ai + ' · ' + braintree;
     integrationStatus.hidden = false;
   }).catch(() => {});
 }
