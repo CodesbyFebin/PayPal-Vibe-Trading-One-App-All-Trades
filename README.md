@@ -1,6 +1,6 @@
 # PayPal Vibe Trading
 
-**One Vibe. Every Trade.** A PayPal AI Hackathon concept that turns a plain-language market idea into an illustrative portfolio, then lets users explore a sample backtest and monthly contribution.
+**One Vibe. Every Trade.** An AI-guided portfolio sandbox with an AgentPaL-style trust layer: model-assisted risk-style selection, signed paper-trading mandates, deterministic order policy, owner approvals, emergency freeze, and a tamper-evident audit journal. Braintree Sandbox provides the PayPal-ecosystem checkout path.
 
 ## Run locally
 
@@ -46,7 +46,7 @@ Until those hosted checks pass, mark live provider verification **not yet verifi
 | --- | --- | --- |
 | Vibe It | [Home](http://localhost:3000/) | Submit “I feel bullish on AI” with **From prompt** selected. The Bold sample allocates 30% US equities, 30% Indian equities, and 40% crypto. Try Safe or Balanced to compare. |
 | Backtest Lab | [Web App](http://localhost:3000/webapp/) | Run the prefilled BTC-USDT 20/50 moving-average example. The fixture shows Sharpe 1.72, max drawdown −11.2%, a 57% win rate, and a sample equity curve. |
-| Paper trading | [Web App](http://localhost:3000/webapp/#paper-heading) | Simulate a fixed-size BTC-USDT fill and see the demo account value change. |
+| Guarded paper trading | [Web App](http://localhost:3000/webapp/#paper-heading) | Inspect the signed mandate, submit a small order, request approval for a larger order, approve the exact payload, and test the kill switch. |
 | Wallet and SIP | [Mobile](http://localhost:3000/mobile/) | View the $1,084.22 sample wallet and simulate a ₹500 monthly UPI AutoPay contribution. |
 
 For the optional browser companion, open `chrome://extensions` or `edge://extensions`, enable Developer mode, and load the `extension/` folder unpacked. The popup links to the local demo. It requests no browser permissions.
@@ -59,7 +59,7 @@ The demo uses HTML, CSS, JavaScript, and Node.js with Express. Vibe It uses the 
 npm test
 ```
 
-The test suite checks served pages, AI/portfolio behavior, backtest fixtures, guarded paper fills, position accounting, simulated fees, Ed25519 mandate verification, prompt-injection denial, exact-payload approval, owner kill switch, audit-chain integrity, PayPal/Braintree mocked boundaries, SIP simulation, and invalid request handling. The [hackathon release](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/releases/tag/v1.0-hackathon) preserves the original packaged submission build.
+The test suite checks served pages, AI/portfolio behavior, backtest fixtures, guarded paper fills, position accounting, simulated fees, Ed25519 mandate verification, prompt-injection denial, exact-payload approval, owner kill switch, audit-chain integrity, PayPal/Braintree mocked boundaries, SIP simulation, and invalid request handling. The [hackathon release](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/releases/tag/v1.0-hackathon) preserves the original packaged submission build. See [Judge Readiness](docs/JUDGING.md), the [three-minute demo script](docs/DEMO-SCRIPT.md), and [API reference](docs/API.md) for verification steps.
 
 ## AgentPaL Guard — signed, risk-bounded paper execution
 
