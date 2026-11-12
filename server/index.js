@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('node:path');
+const { createIntegrations } = require('./integrations');
 
 const root = path.join(__dirname, '..');
 const allocations = {
@@ -22,9 +23,26 @@ function positiveNumber(value, fallback) {
   return Number.isFinite(number) && number > 0 ? number : null;
 }
 
-function createApp() {
+function requestBudget(max) {
+  let resetAt = 0;
+  let used = 0;
+  return () => {
+    const now = Date.now();
+    if (now >= resetAt) {
+      resetAt = now + 60_000;
+      used = 0;
+    }
+    if (used >= max) return false;
+    used++;
+    return true;
+  };
+}
+
+function createApp({ integrations = createIntegrations() } = {}) {
   const app = express();
   let paperNavCents = 108422;
+  const allowAi = requestBudget(12);
+  const allowOrder = requestBudget(6);
 
   app.disable('x-powered-by');
   app.use((req, res, next) => {
@@ -44,7 +62,7 @@ function createApp() {
 
   app.get('/api/health', (req, res) => res.json({ ok: true, service: 'paypal-vibe' }));
 
-  app.post('/api/vibe', (req, res) => {
+  app.post('/api/vibe', async (req, res) => {
     const feeling = textField(req.body.feeling, 'I feel bullish on AI', 240);
     const selectedMode = req.body.mode;
     if (feeling === null) {
@@ -61,7 +79,33 @@ function createApp() {
       else if (/bullish|bold/.test(prompt)) mode = 'Bold';
     }
 
-    res.json({ feeling, mode, portfolio: allocations[mode] });
+    let source = 'rules';
+    const wantsAi = req.body.useAI === true && selectedMode === undefined;
+    if (wantsAi && integrations.aiConfigured && allowAi()) {
+      try {
+        mode = await integrations.classifyVibe(feeling);
+        source = 'ai';
+      } catch {
+        // The existing rules remain available when the provider is unavailable.
+      }
+    }
+    res.json({ feeling, mode, portfolio: allocations[mode], ...(wantsAi ? { source } : {}) });
+  });
+
+  app.post('/api/paypal/sandbox/order', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    if (!integrations.paypalConfigured) {
+      return res.status(503).json({ error: 'PayPal Sandbox credentials are not configured.' });
+    }
+    if (!allowOrder()) {
+      return res.status(429).json({ error: 'The sandbox demo is busy. Try again in a minute.' });
+    }
+    try {
+      const order = await integrations.createSandboxOrder();
+      res.status(201).json(order);
+    } catch {
+      res.status(502).json({ error: 'PayPal Sandbox could not create the preview order.' });
+    }
   });
 
   app.post('/api/backtest', (req, res) => {

@@ -4,7 +4,7 @@
 
 ## Run locally
 
-Requires Node.js 20 or later. No API keys or accounts are required.
+Requires Node.js 20 or later. The sample-data walkthrough runs without credentials. See the integration setup below for the PayPal Sandbox and AI paths.
 
 ```sh
 npm ci
@@ -26,7 +26,7 @@ For the optional browser companion, open `chrome://extensions` or `edge://extens
 
 ## Implementation
 
-The demo uses HTML, CSS, JavaScript, and Node.js with Express. Vibe It uses keyword rules or the selected mode. The Chat Agent extracts a supported pair and moving-average window from the prompt and displays deterministic backtest fixtures. The server serves the overview, web app, mobile view, and [JSON API](docs/API.md) from one origin. The paper balance resets when the server restarts.
+The demo uses HTML, CSS, JavaScript, and Node.js with Express. Vibe It uses the selected mode, a configured AI classifier, or keyword rules when the model is unavailable. The Chat Agent extracts a supported pair and moving-average window from the prompt and displays deterministic backtest fixtures. The server serves the overview, web app, mobile view, and [JSON API](docs/API.md) from one origin. The paper balance resets when the server restarts.
 
 ```sh
 npm test
@@ -34,6 +34,17 @@ npm test
 
 The test suite checks the served pages, portfolio choices, backtest values, paper fills, SIP simulation, and invalid request handling. The [hackathon release](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/releases/tag/v1.0-hackathon) preserves the original packaged submission build.
 
+## PayPal Sandbox and AI setup
+
+The PayPal Orders flow and OpenAI-compatible Chat Completions client are adapted from [PayPal-Vibe](https://github.com/CodesbyFebin/PayPal-Vibe/tree/e32bb2f5b9d81bed5111c1d6fb482848109b1780).
+
+1. Copy `.env.example` to `.env`. Set `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` from a PayPal **Sandbox** application and `AI_API_KEY` from the model provider. For a different OpenAI-compatible provider, set `AI_BASE_URL` and `AI_MODEL` as well. Keep credentials server-side.
+2. Run `npm ci`, then `node --env-file=.env server/index.js`. On a hosted instance, set `APP_URL` to the application's HTTPS origin and supply credentials through the host's environment settings.
+3. Open [Vibe It](http://localhost:3000/), keep **From prompt** selected, and preview a portfolio. **AI-selected mode** means the configured model returned a recognized mode. **Rule-based demo mode** means the fallback supplied it.
+4. Choose **Try the $1 PayPal Sandbox checkout**, then **Create sandbox order**. The server creates a fixed USD $1 order against the Sandbox Orders API. Use **Open PayPal Sandbox** to preview the buyer approval screen with a sandbox buyer account. This app does not authorize or capture the order.
+
+Automated tests exercise the app with simulated upstream responses and check the exact sandbox host, order amount, and AI output handling. Live provider requests require configured credentials. No production PayPal endpoint is used.
+
 ## Demo boundaries
 
-PayPal Vibe Trading is an independent hackathon concept. Market data, backtests, balances, fills, and AutoPay approvals are illustrative. The demo connects to no payment provider, broker, or live market feed and provides no real Buyer Protection coverage or financial advice.
+PayPal Vibe Trading is an independent hackathon concept. Market data, backtests, balances, fills, and AutoPay approvals are illustrative. The optional PayPal connection creates Sandbox preview orders only. The demo uses no broker or live market feed and provides no real Buyer Protection coverage or financial advice.
