@@ -1,0 +1,49 @@
+name: "Bug report"
+description: "Report a reproducible defect"
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start the app with ...
+        2. Open ...
+        3. Submit ...
+        4. Observe ...
+    validations:
+      required: true
+  - type: dropdown
+    id: version
+    attributes:
+      label: Version or commit
+      description: Select the source you tested.
+      options:
+        - main (latest)
+        - v1.0-hackathon
+        - Other / unknown
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime
+      description: Node.js version, operating system, and hosting platform
+      placeholder: "Node 22, macOS, local"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant sanitized logs
+      description: Remove API keys, tokens, payment details, and personal data.
+      render: shell
+    validations:
+      required: false
