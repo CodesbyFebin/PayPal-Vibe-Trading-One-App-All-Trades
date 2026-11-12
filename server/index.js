@@ -48,7 +48,7 @@ function createApp({ integrations = createIntegrations(), app = express() } = {}
   app.use((req, res, next) => {
     res.set('X-Content-Type-Options', 'nosniff');
     res.set('Referrer-Policy', 'no-referrer');
-    res.set('Content-Security-Policy', "default-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
+    res.set('Content-Security-Policy', "default-src 'self'; script-src 'self' https://js.braintreegateway.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.braintreegateway.com; font-src 'self' data: https://*.braintreegateway.com; connect-src 'self' https://*.braintreegateway.com https://*.braintree-api.com; frame-src https://assets.braintreegateway.com https://*.braintreegateway.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
     next();
   });
 
