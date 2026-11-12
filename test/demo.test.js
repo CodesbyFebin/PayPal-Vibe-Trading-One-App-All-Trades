@@ -2,12 +2,20 @@ const assert = require('node:assert/strict');
 const { once } = require('node:events');
 const { after, before, test } = require('node:test');
 const { createApp } = require('../server');
+const market = require('../server/market');
+
+const testMarket = {
+  getPrice: async symbol => ({ symbol, price: symbol === 'BTC-USDT' ? 97240 : 3450, currency: 'USDT', source: 'test-market-feed', fetchedAt: '2026-01-01T00:00:00.000Z', stale: false }),
+  getPrices: async () => ['BTC-USDT', 'ETH-USDT'].map(symbol => ({ symbol, price: symbol === 'BTC-USDT' ? 97240 : 3450, currency: 'USDT', source: 'test-market-feed', fetchedAt: '2026-01-01T00:00:00.000Z', stale: false })),
+  getHistory: async () => Array.from({ length: 180 }, (_, index) => ({ time: Date.UTC(2025, 0, index + 1), close: 100 + Math.sin(index / 5) * 10 + index * 0.2 })),
+  runMovingAverageBacktest: market.runMovingAverageBacktest,
+};
 
 let server;
 let origin;
 
 before(async () => {
-  server = createApp().listen(0, '127.0.0.1');
+  server = createApp({ marketData: testMarket }).listen(0, '127.0.0.1');
   await once(server, 'listening');
   origin = 'http://127.0.0.1:' + server.address().port;
 });
@@ -48,11 +56,11 @@ test('health, holdings, and alpha endpoints return demo data', async () => {
 
 test('Vibe It infers and accepts explicit allocation modes', async () => {
   const response = await post('vibe', { feeling: 'I feel bullish on AI' });
-  assert.deepEqual(await response.json(), {
-    feeling: 'I feel bullish on AI',
-    mode: 'Bold',
-    portfolio: { US: 30, NSE: 30, Crypto: 40, PYUSD: 0 },
-  });
+  const vibe = await response.json();
+  assert.equal(vibe.feeling, 'I feel bullish on AI');
+  assert.equal(vibe.mode, 'Bold');
+  assert.deepEqual(vibe.portfolio, { US: 30, NSE: 30, Crypto: 40, PYUSD: 0 });
+  assert.equal(vibe.market[0].source, 'test-market-feed');
 
   for (const [body, mode] of [
     [{ feeling: 'I want to be safe but feel bullish' }, 'Safe'],
@@ -66,15 +74,21 @@ test('Vibe It infers and accepts explicit allocation modes', async () => {
   }
 });
 
-test('backtest preserves the default fixture and scales equity for other capital', async () => {
-  const baseline = await (await post('backtest', {})).json();
-  assert.equal(baseline.sharpe, 1.72);
-  assert.equal(baseline.maxDD, -11.2);
-  assert.deepEqual(baseline.equity, [1000, 1184, 1120, 1340, 1280]);
+test('backtest calculates deterministic metrics from historical daily candles', async () => {
+  const baselineResponse = await post('backtest', {});
+  assert.equal(baselineResponse.status, 200);
+  const baseline = await baselineResponse.json();
+  assert.equal(baseline.source, 'Kraken daily OHLC');
+  assert.equal(baseline.symbol, 'BTC-USDT');
+  assert.equal(baseline.strategy, '20/50 MA');
+  assert.ok(baseline.period.candles > 100);
+  assert.ok(Number.isFinite(baseline.sharpe));
+  assert.ok(Number.isFinite(baseline.maxDD));
+  assert.ok(baseline.equity.length > 2);
   const scaled = await (await post('backtest', { symbol: 'ETH-USDT', strategy: '10/30 MA', capital: 2000 })).json();
   assert.equal(scaled.symbol, 'ETH-USDT');
   assert.equal(scaled.strategy, '10/30 MA');
-  assert.deepEqual(scaled.equity, baseline.equity.map(value => value * 2));
+  assert.equal(scaled.finalEquity, baseline.finalEquity * 2);
 });
 
 test('paper fills use position accounting, explicit fixture prices, and simulated fees', async () => {
@@ -83,7 +97,7 @@ test('paper fills use position accounting, explicit fixture prices, and simulate
   const first = await firstResponse.json();
   assert.deepEqual(first.fill, {
     action: 'BUY', symbol: 'BTC-USDT', qty: 0.01, price: 97240,
-    notional: 972.4, fee: 0.97, feeRateBps: 10, priceSource: 'fixed-demo-fixture',
+    notional: 972.4, fee: 0.97, feeRateBps: 10, priceSource: 'test-market-feed', priceFetchedAt: '2026-01-01T00:00:00.000Z', priceStale: false,
   });
   assert.equal(first.account.cash, 9026.63);
   assert.equal(first.account.positions['BTC-USDT'], 0.01);
@@ -101,7 +115,7 @@ test('paper fills use position accounting, explicit fixture prices, and simulate
   const noPosition = await post('paper', { action: 'SELL', symbol: 'ETH-USDT', qty: 0.01 });
   assert.equal(noPosition.status, 409);
   assert.deepEqual(await (await post('sip', { amount: 500 })).json(), {
-    ok: true, amount: 500, frequency: 'monthly', method: 'UPI AutoPay', status: 'Approved',
+    ok: true, amount: 500, frequency: 'monthly', method: 'UPI AutoPay simulation', status: 'Simulated approval — no UPI mandate created', realMandateCreated: false,
   });
 });
 
