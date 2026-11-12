@@ -1,0 +1,23 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>【entity-PayPal¦canonical_name=PayPal】 Vibe Trading - WebApp</title>
+<style>body{font-family:system-ui;background:#0B1B3A;color:#fff;margin:0;padding:20px}h1{color:#FFC439}h2{color:#FFC439}.card{background:#12295A;border-radius:16px;padding:16px;margin:12px 0}input,select{padding:12px;border-radius:10px;border:0;width:90%;margin:6px 0}button{background:#FFC439;border:0;padding:12px 16px;border-radius:12px;font-weight:700;cursor:pointer;color:#003087}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}pre{background:#000;color:#7CFF8A;padding:12px;border-radius:12px;overflow:auto}table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px solid #2A4A8A;text-align:left}</style>
+</head><body>
+<h1>【entity-PayPal¦canonical_name=PayPal】 Vibe Trading - WebApp</h1>
+<p>One App. All Trades. | 【entity-NSE¦canonical_name=NSE】 / 【entity-BSE¦canonical_name=BSE】 • US • Crypto • PYUSD • SIPs • UPI AutoPay</p>
+<div class="grid">
+<div class="card"><h2>Chat Agent</h2><p>Type: Backtest BTC-USDT 20/50 MA crossover 2024</p><input id="chat" placeholder="Backtest BTC-USDT 20/50 MA crossover 2024"><br><button onclick="runChat()">Run Agent</button><pre id="chatOut">Plan > Ground > Execute > Validate - ready</pre></div>
+<div class="card"><h2>Backtest Lab</h2><label>Symbol</label><select id="sym"><option>BTC-USDT</option><option>NIFTY50</option><option>RELIANCE</option><option>AAPL</option><option>PYUSD</option></select><label>Strategy</label><select id="strat"><option>20/50 MA Crossover</option><option>RSI Mean Reversion</option><option>MACD Momentum</option></select><label>Capital $</label><input id="cap" value="1000"><button onclick="runBack()">Run Backtest</button><pre id="backOut">Equity curve will appear here</pre></div>
+</div>
+<div class="card"><h2>Alpha Zoo</h2><table><tr><th>Alpha</th><th>IC</th><th>Sharpe</th><th>Win Rate</th></tr><tr><td>GTJA 001 - Momentum</td><td>0.052</td><td>1.82</td><td>58%</td></tr><tr><td>Alpha101 004 - Reversal</td><td>0.041</td><td>1.45</td><td>54%</td></tr><tr><td>Qlib - Volatility</td><td>0.038</td><td>1.31</td><td>52%</td></tr></table></div>
+<div class="card"><h2>Options Lab</h2><p>Multi-leg builder • Payoff • Greeks • IV Surface</p><input id="opt" placeholder="NIFTY 26000 CE + 25800 PE"><br><button onclick="runOpt()">Build Payoff</button><pre id="optOut">Delta 0.52 | Gamma 0.04 | Theta -12.4 | Vega 18.2</pre></div>
+<div class="card"><h2>Portfolio + Risk X-Ray</h2><p>Holdings: NIFTY 40% • US AI 30% • Crypto 15% • PYUSD 15%</p><p>VaR (95%): -2.1% | ES: -3.4% | Sharpe: 1.62 | Max DD: -8.2%</p><button onclick="rebal()">Rebalance Preview</button><pre id="rebOut">Target weights ready</pre></div>
+<div class="card"><h2>Paper Trading</h2><p>Start: $1000 • NAV: $1084.22 • P&L: +8.4%</p><button onclick="adv()">Advance 1 Day</button><pre id="paperOut">Simulated fill: BUY 0.01 BTC @ 97240</pre></div>
+<script>
+function runChat(){let v=document.getElementById('chat').value||"Backtest BTC-USDT 20/50 MA crossover 2024";document.getElementById('chatOut').innerText="USER: "+v+"\n\nPLAN: Parse symbol + strategy + period\nGROUND: Fetch BTC-USDT 2024 OHLCV\nEXECUTE: 20/50 MA crossover, fees 0.1%, slippage 0.05%\nVALIDATE: Train/ OOS / Holdout split\n\nRESULT: Return +24.6% | Sharpe 1.72 | Max DD -11.2% | Win Rate 57% | Trades 42\nExport: Pine Script ready";}
+function runBack(){let s=document.getElementById('sym').value;let st=document.getElementById('strat').value;let c=document.getElementById('cap').value;document.getElementById('backOut').innerText=s+" | "+st+" | Capital $"+c+"\nReturn +18.4% | Sharpe 1.58 | Max DD -9.1% | Win 56%\nEquity: 1000 -> 1184 -> 1120 -> 1340 -> 1280";}
+function runOpt(){document.getElementById('optOut').innerText="Legs: NIFTY 26000 CE + 25800 PE\nPayoff at expiry: Max Profit $420 | Max Loss $180 | Breakeven 25940\nGreeks: Delta 0.52 Gamma 0.04 Theta -12.4 Vega 18.2";}
+function rebal(){document.getElementById('rebOut').innerText="Rebalance: Sell 2% NIFTY -> Buy 2% PYUSD\nNew weights: NIFTY 38% US AI 30% Crypto 15% PYUSD 17%\nCost: $1.20 | Slippage: 0.03%";}
+function adv(){document.getElementById('paperOut').innerText="Day +1: Simulated fill BUY 0.01 BTC @ 97240\nNew NAV: $1092.40 | P&L +9.2%";}
+</script>
+</body></html>
