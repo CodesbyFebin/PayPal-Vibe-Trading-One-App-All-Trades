@@ -204,7 +204,7 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
     const symbol = textField(req.body.symbol, 'BTC-USDT', 32)?.toUpperCase();
     const strategy = textField(req.body.strategy, '20/50 MA', 80);
     const capital = positiveNumber(req.body.capital, 1000);
-    if (!symbol || !['BTC-USDT', 'ETH-USDT'].includes(symbol) || strategy === null || capital === null || capital > 1_000_000) {
+    if (!symbol || !['BTC-USDT', 'ETH-USDT'].includes(symbol) || strategy === null || !/^\\d{1,3}\\s*\\/\\s*\\d{1,3}\\s*MA$/i.test(strategy) || capital === null || capital > 1_000_000) {
       return res.status(400).json({ error: 'Use BTC-USDT or ETH-USDT, a valid moving-average strategy, and starting capital up to 1,000,000.' });
     }
     try {
