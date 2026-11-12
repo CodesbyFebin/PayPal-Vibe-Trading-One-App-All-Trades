@@ -39,7 +39,7 @@ function requestBudget(max) {
   };
 }
 
-function createApp({ integrations = createIntegrations(), app = express(), ownerPin = process.env.OWNER_PIN } = {}) {
+function createApp({ integrations = createIntegrations(), app = express(), ownerPin = process.env.OWNER_PIN, marketData = market } = {}) {
   const guard = createTradingGuard({ ownerPin });
   const paperAccount = { cashCents: 1_000_000, positions: Object.create(null) };
   const allowGuardControl = requestBudget(12);
@@ -70,7 +70,7 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
 
   app.get('/api/market/prices', async (req, res) => {
     res.set('Cache-Control', 'no-store');
-    const prices = await market.getPrices();
+    const prices = await marketData.getPrices();
     res.json({ source: 'Kraken public market data', prices, fetchedAt: new Date().toISOString() });
   });
 
@@ -144,7 +144,7 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
         // The existing rules remain available when the provider is unavailable.
       }
     }
-    const marketPrices = await market.getPrices();
+    const marketPrices = await marketData.getPrices();
     res.json({ feeling, mode, portfolio: allocations[mode], market: marketPrices, ...(wantsAi ? { source } : {}), ...(classification ? { reason: classification.reason, provider: classification.provider } : {}) });
   });
 
@@ -208,8 +208,8 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
       return res.status(400).json({ error: 'Use BTC-USDT or ETH-USDT, a valid moving-average strategy, and starting capital up to 1,000,000.' });
     }
     try {
-      const candles = await market.getHistory(symbol);
-      res.json(market.runMovingAverageBacktest({ symbol, strategy, capital, candles }));
+      const candles = await marketData.getHistory(symbol);
+      res.json(marketData.runMovingAverageBacktest({ symbol, strategy, capital, candles }));
     } catch (error) {
       res.status(502).json({ error: error.message || 'Live market history is unavailable.' });
     }
@@ -260,7 +260,7 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
     }
 
     let quote;
-    try { quote = await market.getPrice(symbol, { force: true }); }
+    try { quote = await marketData.getPrice(symbol, { force: true }); }
     catch (error) { return res.status(503).json({ error: error.message }); }
     const price = quote.price;
     const decision = guard.evaluate({ action, symbol, qty, price, context, ...(approvalId ? { approvalId } : {}) });
