@@ -181,7 +181,24 @@ async function refreshGuardStatus() {
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || 'Approval failed.');
-            status.textContent = 'Exact payload approved. Resubmit the identical paper trade with its approval ID via the API to execute.';
+            const executionResponse = await fetch('/api/paper', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: approval.trade.action,
+                symbol: approval.trade.symbol,
+                qty: approval.trade.qty,
+                context: approval.trade.context,
+                approvalId: approval.approvalId,
+              }),
+            });
+            const execution = await executionResponse.json();
+            if (!executionResponse.ok) throw new Error(execution.error || 'Approved paper trade could not execute.');
+            status.textContent = 'Owner approved the exact payload. Paper fill recorded: '
+              + execution.fill.action + ' ' + execution.fill.qty + ' ' + execution.fill.symbol
+              + ' · NAV ' + usd.format(execution.nav) + '.';
+            const paperStatus = document.getElementById('paper-status');
+            if (paperStatus) paperStatus.textContent = status.textContent;
           } catch (error) {
             status.textContent = error.message;
           } finally {
