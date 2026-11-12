@@ -33,9 +33,10 @@
     "audit": "npm audit --audit-level=high"
   },
   "dependencies": {
-    "express": "^5.3.0",
+    "braintree": "^3.41.0",
     "cors": "^2.8.5",
-    "braintree": "^3.41.0"
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.4"
   },
   "private": true,
   "engines": {
