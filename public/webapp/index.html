@@ -27,7 +27,12 @@
       <h1>Ask. Backtest. Compare.</h1>
       <p>Use live read-only Kraken prices and a reproducible moving-average backtest. All orders remain simulated paper fills.</p>
     </section>
-    <section class="panel" id="market-prices" aria-labelledby="market-heading">\n      <h2 id="market-heading">Live market reference</h2>\n      <p id="market-prices-status" class="feedback" role="status">Connecting to read-only market data…</p>\n      <div id="market-price-cards" class="grid"></div>\n    </section>\n    <section class="panel" aria-labelledby="backtest-heading">
+    <section class="panel" id="market-prices" aria-labelledby="market-heading">
+      <h2 id="market-heading">Live market reference</h2>
+      <p id="market-prices-status" class="feedback" role="status">Connecting to read-only market data…</p>
+      <div id="market-price-cards" class="grid"></div>
+    </section>
+    <section class="panel" aria-labelledby="backtest-heading">
       <h2 id="backtest-heading">Chat Agent + Backtest Lab</h2>
       <p class="muted">Plan → Ground → Execute → Validate</p>
       <form id="backtest">
@@ -40,7 +45,8 @@
       </form>
       <p id="backtest-status" class="feedback" role="status"></p>
       <div id="backtest-result" class="result" hidden>
-        <h2 data-value="symbol"></h2>\n        <p class="muted" data-value="backtest-source"></p>
+        <h2 data-value="symbol"></h2>
+        <p class="muted" data-value="backtest-source"></p>
         <dl class="metrics">
           <div><dt>Sharpe ratio</dt><dd data-value="sharpe"></dd></div>
           <div><dt>Max drawdown</dt><dd data-value="drawdown"></dd></div>
