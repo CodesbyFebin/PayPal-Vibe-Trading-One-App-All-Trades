@@ -283,11 +283,19 @@ function createApp({ integrations = createIntegrations(), app = express(), owner
       if (costCents > paperAccount.cashCents) {
         return res.status(409).json({ error: 'Insufficient paper cash for this order including the simulated fee.' });
       }
+      if (approvalId && decision.reasons.some(reason => reason.includes('Exact trade payload was approved'))) {
+        const consumed = guard.consumeApproval({ approvalId, trade: { action, symbol, qty, price, context } });
+        if (!consumed.ok) return res.status(409).json({ error: consumed.error });
+      }
       paperAccount.cashCents -= costCents;
       paperAccount.positions[symbol] = Number((currentQty + qty).toFixed(8));
     } else {
       if (currentQty + 1e-10 < qty) {
         return res.status(409).json({ error: 'Insufficient paper position to sell this quantity.' });
+      }
+      if (approvalId && decision.reasons.some(reason => reason.includes('Exact trade payload was approved'))) {
+        const consumed = guard.consumeApproval({ approvalId, trade: { action, symbol, qty, price, context } });
+        if (!consumed.ok) return res.status(409).json({ error: consumed.error });
       }
       const proceedsCents = Math.round((notional - fee) * 100);
       paperAccount.cashCents += proceedsCents;
