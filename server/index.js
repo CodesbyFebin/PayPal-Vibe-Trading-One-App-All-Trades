@@ -38,8 +38,7 @@ function requestBudget(max) {
   };
 }
 
-function createApp({ integrations = createIntegrations() } = {}) {
-  const app = express();
+function createApp({ integrations = createIntegrations(), app = express() } = {}) {
   let paperNavCents = 108422;
   const allowAi = requestBudget(12);
   const allowOrder = requestBudget(6);
@@ -178,9 +177,6 @@ function createApp({ integrations = createIntegrations() } = {}) {
   ]));
   app.use('/api', (req, res) => res.status(404).json({ error: 'API route not found.' }));
 
-  for (const section of ['landing', 'webapp', 'mobile']) {
-    app.use('/' + section, express.static(path.join(root, section)));
-  }
   app.use(express.static(path.join(root, 'public')));
 
   app.use((error, req, res, next) => {

@@ -13,6 +13,12 @@ npm run dev
 
 Open [the local demo](http://localhost:3000). Set `PORT` to use another port. The optional browser extension points to port 3000.
 
+## Hosting
+
+The GitHub Pages workflow publishes the static overview from `public/landing/index.html`. Set the repository Actions variable `WEB_APP_URL` to the hosted app's HTTPS origin to link the landing page to Vibe It, the Web App, and Mobile.
+
+The repository also has a Vercel Express entry point. The service can run on Render as a Node web service with `npm ci` as the build command and `npm start` as the start command. Configure optional PayPal Sandbox and AI credentials as private server environment variables. Public demos can run with the sample-data flow and without keys. Paper balances are in memory and can reset when the hosting platform starts a new instance.
+
 ## Judge walkthrough
 
 | Step | Open | Try |

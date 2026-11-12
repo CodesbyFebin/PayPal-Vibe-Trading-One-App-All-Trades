@@ -1,0 +1,44 @@
+name: Deploy landing page
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/pages.yml
+      - scripts/build-pages.js
+      - public/landing/index.html
+      - public/assets/app.css
+      - public/assets/vibe-icon.svg
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publish.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/configure-pages@v5
+      - run: node scripts/build-pages.js
+        env:
+          WEB_APP_URL: ${{ vars.WEB_APP_URL }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/pages
+      - uses: actions/deploy-pages@v4
+        id: publish
