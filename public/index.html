@@ -32,7 +32,7 @@
       <form id="vibe">
         <label for="feeling">Your market idea</label>
         <input id="feeling" name="feeling" value="I feel bullish on AI" maxlength="240" aria-describedby="vibe-hint">
-        <small id="vibe-hint">Use the sample prompt or enter your own.</small>
+        <small id="vibe-hint">Use the sample prompt or enter your own. With “From prompt,” the configured AI provider may receive your idea. Avoid personal information.</small>
         <fieldset>
           <legend>Portfolio approach</legend>
           <div class="choices">
@@ -48,6 +48,7 @@
       <div id="vibe-result" class="result" hidden>
         <h2><span data-value="mode"></span> sample allocation</h2>
         <p data-value="feeling"></p>
+        <p class="muted" data-value="source"></p>
         <dl class="metrics">
           <div><dt>US equities</dt><dd data-value="US"></dd></div>
           <div><dt>Indian equities</dt><dd data-value="NSE"></dd></div>
@@ -55,6 +56,20 @@
           <div><dt>PYUSD</dt><dd data-value="PYUSD"></dd></div>
         </dl>
         <a href="/webapp/">Continue to the Backtest Lab</a>
+        <p><a href="#sandbox-checkout">Try the $1 PayPal Sandbox checkout</a></p>
+      </div>
+    </section>
+    <section class="panel" id="sandbox-checkout" aria-labelledby="checkout-heading">
+      <h2 id="checkout-heading">$1 PayPal Sandbox checkout</h2>
+      <p>Create a USD $1 test order and open PayPal Sandbox. This demo creates the order and lets you preview buyer approval. It does not authorize or capture a payment.</p>
+      <p id="sandbox-return" class="muted" hidden></p>
+      <form id="sandbox">
+        <button type="submit">Create sandbox order</button>
+      </form>
+      <p id="sandbox-status" class="feedback" role="status"></p>
+      <div id="sandbox-result" class="result" hidden>
+        <p>Sandbox order <strong data-value="orderId"></strong></p>
+        <a id="sandbox-approval" class="button">Open PayPal Sandbox</a>
       </div>
     </section>
   </main>

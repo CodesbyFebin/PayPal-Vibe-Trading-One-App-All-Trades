@@ -5,7 +5,8 @@ Base URL: `http://localhost:3000/api`. Send JSON objects for POST requests. Opti
 | Method and route | Optional input | Response |
 | --- | --- | --- |
 | `GET /health` | — | `{"ok":true,"service":"paypal-vibe"}` |
-| `POST /vibe` | `feeling` (default `I feel bullish on AI`), `mode` (Safe, Balanced, or Bold) | Prompt, selected or inferred mode, and sample portfolio percentages |
+| `POST /vibe` | `feeling` (default `I feel bullish on AI`), `mode` (Safe, Balanced, or Bold), `useAI` (optional opt-in) | Prompt, selected or inferred mode, sample portfolio percentages, and the source when automatic AI selection was requested |
+| `POST /paypal/sandbox/order` | None | Sandbox order ID and a PayPal Sandbox approval URL, or HTTP 503 when credentials are absent |
 | `POST /backtest` | `symbol` (BTC-USDT), `strategy` (20/50 MA), `capital` (1000) | Fixture metrics and an equity curve scaled to starting capital |
 | `GET /portfolio` | — | Sample holdings and risk metrics |
 | `POST /paper` | `action` (BUY or SELL), `symbol` (BTC-USDT), `qty` (0.01) | Illustrative fill and updated in-memory demo account value |

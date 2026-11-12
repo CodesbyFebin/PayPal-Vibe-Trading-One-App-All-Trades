@@ -50,9 +50,11 @@ demoForm('vibe', async (fields, result) => {
   const mode = fields.get('mode');
   const body = { feeling: fields.get('feeling') };
   if (mode) body.mode = mode;
+  else body.useAI = true;
   const data = await request('/api/vibe', body);
 
-  setValues(result, { mode: data.mode, feeling: data.feeling });
+  const source = mode ? 'Manually selected mode' : data.source === 'ai' ? 'AI-selected mode' : 'Rule-based demo mode';
+  setValues(result, { mode: data.mode, feeling: data.feeling, source });
   for (const [asset, percent] of Object.entries(data.portfolio)) {
     setValues(result, { [asset]: percent + '%' });
   }
@@ -116,3 +118,20 @@ demoForm('sip', async (fields, result) => {
   const data = await request('/api/sip', { amount: Number(fields.get('amount')) });
   setValues(result, { status: data.status + ' (simulation)', amount: inr.format(data.amount) + ' / month' });
 });
+
+demoForm('sandbox', async (fields, result) => {
+  const data = await request('/api/paypal/sandbox/order', {});
+  setValues(result, { orderId: data.orderId });
+  result.querySelector('#sandbox-approval').href = data.approvalUrl;
+});
+
+const sandboxReturn = document.getElementById('sandbox-return');
+if (sandboxReturn) {
+  const sandbox = new URLSearchParams(location.search).get('sandbox');
+  if (sandbox === 'returned' || sandbox === 'cancelled') {
+    sandboxReturn.textContent = sandbox === 'returned'
+      ? 'Returned from PayPal Sandbox. This demo does not authorize or capture payments.'
+      : 'The PayPal Sandbox preview was cancelled.';
+    sandboxReturn.hidden = false;
+  }
+}
