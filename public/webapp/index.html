@@ -36,7 +36,7 @@
         <small id="prompt-hint">Try a pair such as BTC-USDT and a moving-average window such as 20/50 MA.</small>
         <label for="capital">Starting capital (USD)</label>
         <input id="capital" name="capital" type="number" min="1" max="1000000" step="0.01" value="1000" required>
-        <button type="submit">Run sample backtest</button>
+        <button type="submit" disabled>Run sample backtest</button>
       </form>
       <p id="backtest-status" class="feedback" role="status"></p>
       <div id="backtest-result" class="result" hidden>
@@ -58,7 +58,7 @@
       <form id="paper">
         <label for="action">Side</label>
         <select id="action" name="action"><option>BUY</option><option>SELL</option></select>
-        <button type="submit">Simulate paper fill</button>
+        <button type="submit" disabled>Simulate paper fill</button>
       </form>
       <p id="paper-status" class="feedback" role="status"></p>
       <dl id="paper-result" class="result metrics" hidden>

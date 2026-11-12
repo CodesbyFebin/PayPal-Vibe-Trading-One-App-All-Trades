@@ -9,6 +9,7 @@ on:
       - public/landing/index.html
       - public/assets/app.css
       - public/assets/vibe-icon.svg
+      - public/assets/vibe-mascot.webp
   workflow_dispatch:
 
 permissions:

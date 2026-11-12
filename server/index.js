@@ -42,6 +42,7 @@ function createApp({ integrations = createIntegrations(), app = express() } = {}
   let paperNavCents = 108422;
   const allowAi = requestBudget(12);
   const allowOrder = requestBudget(6);
+  const allowVerification = requestBudget(12);
 
   app.disable('x-powered-by');
   app.use((req, res, next) => {
@@ -60,6 +61,11 @@ function createApp({ integrations = createIntegrations(), app = express() } = {}
   });
 
   app.get('/api/health', (req, res) => res.json({ ok: true, service: 'paypal-vibe' }));
+
+  app.get('/api/demo/status', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json({ paypalSandbox: integrations.paypalConfigured, runtimeAi: integrations.aiConfigured });
+  });
 
   app.post('/api/vibe', async (req, res) => {
     const feeling = textField(req.body.feeling, 'I feel bullish on AI', 240);
@@ -123,6 +129,25 @@ function createApp({ integrations = createIntegrations(), app = express() } = {}
       res.status(201).json(alias ? { id: orderId, status, mode, approvalUrl } : { mode, orderId, approvalUrl });
     } catch {
       res.status(502).json({ error: 'PayPal Sandbox could not create the preview order.' });
+    }
+  });
+
+  app.post('/api/paypal/sandbox/verify', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    if (!integrations.paypalConfigured) return res.status(503).json({ error: 'PayPal Sandbox credentials are not configured.' });
+
+    const { orderId, state } = req.body;
+    const nonce = integrations.parseReturnState(state);
+    if (typeof orderId !== 'string' || !/^[A-Z0-9]{1,36}$/.test(orderId) || !nonce) {
+      return res.status(400).json({ error: 'This checkout return is invalid or has expired. Start a new sandbox order.' });
+    }
+    if (!allowVerification()) return res.status(429).json({ error: 'Sandbox verification is busy. Try again in a minute.' });
+    try {
+      const order = await integrations.verifySandboxOrder(orderId, nonce);
+      if (!order) return res.status(422).json({ error: 'PayPal did not return a matching USD $1 sandbox order.' });
+      res.json(order);
+    } catch {
+      res.status(502).json({ error: 'PayPal Sandbox could not verify the order.' });
     }
   });
 

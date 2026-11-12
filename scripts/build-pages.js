@@ -21,14 +21,14 @@ const links = {
 
 let html = fs.readFileSync(path.join(root, 'public', 'landing', 'index.html'), 'utf8');
 html = html.replace('<a href="/">Vibe It</a>', '<a href="/#vibe-it">Vibe It</a>');
-html = html.replace(/href="(\/[^"]*)"/g, (_, href) => {
+html = html.replace(/(href|src)="(\/[^"]*)"/g, (_, attribute, href) => {
   const target = href.startsWith('/assets/') ? '.' + href : links[href];
   if (!target) throw new Error('Unexpected landing page link: ' + href);
-  return 'href="' + target + '"';
+  return attribute + '="' + target + '"';
 });
 
 fs.mkdirSync(path.join(output, 'assets'), { recursive: true });
-for (const name of ['app.css', 'vibe-icon.svg']) {
+for (const name of ['app.css', 'vibe-icon.svg', 'vibe-mascot.webp']) {
   fs.copyFileSync(path.join(root, 'public', 'assets', name), path.join(output, 'assets', name));
 }
 fs.writeFileSync(path.join(output, 'index.html'), html);
