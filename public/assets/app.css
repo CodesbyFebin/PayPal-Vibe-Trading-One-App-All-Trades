@@ -123,3 +123,34 @@ figcaption { font-size: .9rem; color: var(--muted); }
   .hero-feature, .journey { grid-template-columns: 1fr; }
   .hero-art { height: auto; aspect-ratio: 16 / 9; }
 }
+
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem;
+  margin-block: .8rem;
+}
+.button-row button {
+  justify-self: auto;
+}
+#guard-approvals {
+  display: grid;
+  gap: .7rem;
+}
+#guard-approvals > div {
+  display: grid;
+  gap: .45rem;
+  padding: .75rem;
+  border: 1px solid var(--border);
+  border-radius: .65rem;
+  background: var(--paper);
+}
+#guard-approvals code {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: .75rem;
+}
+#guard-metrics dd {
+  overflow-wrap: anywhere;
+}
