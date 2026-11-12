@@ -234,7 +234,7 @@ test('PayPal Sandbox verification is IP rate-limited before provider work', asyn
       body: JSON.stringify({ orderId: 'SANDBOX123', state: 'signed-state' }),
     });
     assert.equal(limited.status, 429);
-    assert.match(limited.headers.get('ratelimit'), /limit=12/);
+    assert.match(limited.headers.get('ratelimit'), /r=0/);
     assert.equal(verifications, 12, 'the rejected request must not call PayPal');
   } finally {
     await new Promise(resolve => local.close(resolve));
