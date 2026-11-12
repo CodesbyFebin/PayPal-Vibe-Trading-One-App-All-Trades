@@ -1,0 +1,7 @@
+{
+  "manifest_version": 3,
+  "name": "PayPal Vibe Trading",
+  "version": "1.0",
+  "description": "One App. All Trades. Vibe It in 3 taps.",
+  "action": { "default_title": "PayPal Vibe" }
+}
