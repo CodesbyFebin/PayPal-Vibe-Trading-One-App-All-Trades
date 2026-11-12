@@ -4,6 +4,20 @@ Source: https://github.com/CodesbyFebin/PayPal-Vibe
 
 The previous AgentPaL codebase was inspected for reusable payment integration work. The current Express app is not a Next.js app and does not have AgentPaL's mandate, approval, JSON-store, or payment lifecycle modules. Those files were therefore not copied wholesale.
 
+## Additional Guard adaptation
+
+The current upgrade also ports the trust-boundary pattern from AgentPaL's `policy.ts`, `crypto.ts`, `approvals-guard.ts`, `receipts.ts`, and `idempotency.ts` into a smaller JavaScript paper-trading Guard:
+
+- `server/guard.js` creates and verifies an Ed25519-signed paper-only mandate.
+- Policy decisions are deterministic: `ALLOW`, `REQUIRE_APPROVAL`, or `DENY`.
+- Prompt/context fields are treated as untrusted data and checked for common instruction-override patterns.
+- Owner approvals require a server-side PIN and bind to a SHA-256 hash of the exact trade payload. Approval is one-use.
+- The emergency kill switch requires owner authentication.
+- Decisions, approvals, freeze transitions, and fills are appended to a SHA-256 hash-chained in-memory journal.
+- `server/index.js` routes every paper order through the Guard and updates cash/positions only after ALLOW.
+
+This is a deliberate adaptation, not a wholesale copy of AgentPaL's finance engine or a claim that the full AgentPaL app was merged. The current Guard is process-local, paper-only, and resets on restart. It does not provide durable production authorization, persistent audit anchoring, or live broker connectivity.
+
 ## Reused in this repository
 
 - `src/components/BraintreeCheckout.tsx`: the lazy-loaded Braintree Drop-in script pattern, client lifecycle cleanup, and optional PayPal wallet configuration were adapted to `public/assets/app.js`.

@@ -1,410 +1,121 @@
-<!-- ShipOS Hero Banner · 1200x630-equivalent OG block -->
-<div align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&height=220&text=PayPal-Vibe-Trading-One-App-All-Trades&fontSize=60&fontAlignY=36&desc=Contribute%20to%20CodesbyFebin%2FPayPal-Vibe-Trading-One-App-All-Trades%20development%20by%20creating%20&descAlignY=58&descSize=16&color=0:7c2d12,100:fdba74&section=header&reversal=false" alt="PayPal-Vibe-Trading-One-App-All-Trades — Contribute to CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades development by creating " width="100%" />
-  <h1 align="center" style="border-bottom: none">PayPal-Vibe-Trading-One-App-All-Trades</h1>
-  <p align="center"><em>Contribute to CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades development by creating </em></p>
-  <p align="center">
-    <a href="https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades">📦 Repository</a> ·
-    <a href="https://paypal-vibe-trading.vercel.app">🚀 Live Demo</a> · <a href="https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/issues">🐛 Issues</a> · <a href="https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/pulls">🔀 Pull Requests</a>
-  </p>
-</div>
+# PayPal Vibe Trading
 
-![stars](https://img.shields.io/github/stars/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades?style=flat-square&logo=github&label=stars) ![forks](https://img.shields.io/github/forks/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades?style=flat-square&logo=github&label=forks) ![issues](https://img.shields.io/github/issues/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades?style=flat-square&logo=github&label=issues) ![prs](https://img.shields.io/github/issues-pr/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades?style=flat-square&logo=github&label=PRs) ![last commit](https://img.shields.io/github/last-commit/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/main?style=flat-square&logo=git&label=last%20commit) ![license](https://img.shields.io/github/license/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades?style=flat-square&label=license) ![release](https://img.shields.io/github/v/release/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades?style=flat-square&logo=github&label=release) ![PRs](https://img.shields.io/badge/PRs-welcome-10b981?style=flat-square&logo=github)
-![JavaScript](https://img.shields.io/badge/JavaScript--059669?style=flat-square&logo=javascript&logoColor=white) ![Express](https://img.shields.io/badge/Express--059669?style=flat-square&logo=express&logoColor=white) ![package manager](https://img.shields.io/badge/package%20manager-npm-14b8a6?style=flat-square&logo=npm&logoColor=white) ![tests](https://img.shields.io/badge/tests-passing-10b981?style=flat-square&logo=githubactions&logoColor=white) ![CI](https://img.shields.io/badge/CI-2%20workflows-10b981?style=flat-square&logo=githubactions&logoColor=white) ![version](https://img.shields.io/badge/version-1.0.0-0d9488?style=flat-square) ![provenance](https://img.shields.io/badge/provenance-zero-trust-10b981?style=flat-square) ![stars](https://img.shields.io/badge/stars-appreciated-f59e0b?style=flat-square&logo=github)
+**One Vibe. Every Trade.** An AI-guided portfolio sandbox with an AgentPaL-style trust layer: model-assisted risk-style selection, signed paper-trading mandates, deterministic order policy, owner approvals, emergency freeze, and a tamper-evident audit journal. Braintree Sandbox provides the PayPal-ecosystem checkout path.
 
-> [!IMPORTANT]
-> **PayPal-Vibe-Trading-One-App-All-Trades** is verified by [ShipOS](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades) Zero-Trust Provenance on 12 Nov 2026: every claim in this README traces to a commit, manifest, or file. Generated for the **PayPal-Vibe-Trading-One-App-All-Trades** audience.
+## Run locally
 
-> **TL;DR** — GEO Facts Box
->
-> - **What it is:** Contribute to CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades development by creating 
-> - **Who it is for:** developers working with JavaScript
-> - **Key stats:** 0 ★ · 0 forks · 14+ commits · JavaScript (100%) · MIT
-> - **Key features:** Express integration · Continuous Integration · Automated tests
-> - **How to start:** clone → `npm install` → follow Quick Start below
+Requires Node.js 20 or later. The sample-data walkthrough runs without credentials. See the integration setup below for the Braintree Sandbox and AI paths.
 
-## Table of Contents
-
-- [What is it?](#what-is-it)
-- [The Problem](#the-problem)
-- [The Solution](#the-solution)
-- [Features](#features)
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Available Scripts](#available-scripts)
-- [Quick Start](#quick-start)
-- [Environment Variables](#environment-variables)
-- [Project Structure](#project-structure)
-- [Testing & CI](#testing--continuous-integration)
-- [Security](#security)
-- [Repository Statistics](#repository-statistics)
-- [Commit Intelligence](#commit-intelligence)
-- [Why this repo?](#why-this-repo)
-- [Proof Ledger](#proof-ledger)
-- [Roadmap](#roadmap)
-- [FAQ](#faq)
-- [Contributing](#contributing)
-- [License](#license)
-- [Changelog](#changelog)
-- [Acknowledgments](#acknowledgments)
-
-## What is PayPal-Vibe-Trading-One-App-All-Trades?
-
-Contribute to CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades development by creating 
-
-Contribute to CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades development by creating an account on GitHub.
-
-🔗 **Live demo:** [paypal-vibe-trading.vercel.app](https://paypal-vibe-trading.vercel.app)
-
-## The Problem
-
-Most projects stagnate not because the code is weak, but because onboarding friction, missing docs, and manual verification burn contributor goodwill. PayPal-Vibe-Trading-One-App-All-Trades tackles this directly in the JavaScript ecosystem.
-
-## The Solution
-
-PayPal-Vibe-Trading-One-App-All-Trades is built with JavaScript, Express. It exposes a clear setup path via npm and has been iterated across 14+ commits, with CI keeping regressions in check.
-
-## Features
-
-| Feature | What it does | Evidence |
-| --- | --- | --- |
-| **Express integration** | PayPal-Vibe-Trading-One-App-All-Trades ships with Express wired into its npm toolchain, detected from its dependency manifests. | ✅ `express` in package.json |
-| **Continuous Integration** | Automated CI pipeline with 2 GitHub Actions workflows (checks.yml, pages.yml). | ✅ `.github/workflows` |
-| **Automated tests** | The repository contains a test suite and/or test scripts runnable from its package manifests. | ✅ CI/test detection |
-
-## Architecture
-
-```mermaid
-graph LR
-  C["👤 Consumers"] --> S["🔌 Express Server"]
-  CI["🔁 GitHub Actions CI"] -.-> CORE
-  classDef infra fill:#064e3b,stroke:#10b981,color:#ecfdf5;
-```
-
-## Tech Stack
-
-| Technology | Version / Share |
-| --- | --- |
-| JavaScript | 100% (detected) |
-| Express | v^4.18.2 |
-| GitHub Actions | detected |
-| Vercel | detected |
-
-## Available Scripts
-
-All commands below are read from the project manifest — no invented tooling:
-
-| Script | Command |
-| --- | --- |
-| `start` | `node server/index.js` |
-| `dev` | `node server/index.js` |
-| `test` | `node --test` |
-
-## Quick Start
-
-### Prerequisites
-
-- **Git** — to clone the repository
-- **JavaScript** — the core runtime
-- **npm** — detected from the repository's lockfile/config
-
-### Install & run
-
-```bash
-# 1. Clone
-git clone https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades.git
-cd PayPal-Vibe-Trading-One-App-All-Trades
-
-# 2. Install dependencies
-npm install
-
-# 3. Start development
+```sh
+npm ci
 npm run dev
 ```
 
-### Troubleshooting matrix
+Open [the local demo](http://localhost:3000). Set `PORT` to use another port. The optional browser extension points to port 3000.
 
-Errors people actually hit, mapped to causes and fixes:
+## Hosting
 
-| Error / Symptom | Likely cause | Fix |
+The GitHub Pages workflow publishes the static overview from `public/landing/index.html`. Set the repository Actions variable `WEB_APP_URL` to the hosted app's HTTPS origin to link the landing page to Vibe It, the Web App, and Mobile.
+
+The repository also has a Vercel Express entry point. The service can run on Render as a Node web service with `npm ci` as the build command and `npm start` as the start command. Public demos can run with the sample-data flow and without keys. Paper balances are in memory and can reset when the hosting platform starts a new instance.
+
+### Vercel Production credentials — judging verification
+
+The Braintree Sandbox checkout is the primary payment demo. The Vercel project `paypal-vibe-trading` needs these variables in **Settings → Environment Variables**, targeted to **Production**:
+
+- `BRAINTREE_ENV=sandbox`
+- `BRAINTREE_MERCHANT_ID`
+- `BRAINTREE_PUBLIC_KEY`
+- `BRAINTREE_PRIVATE_KEY`
+- Either `GEMINI_API_KEY` or `OPENAI_API_KEY` — for the AI provider check
+
+Add the values directly in the Vercel dashboard. Do not put credentials in GitHub, source files, issue comments, logs, or ChatGPT. Mark private values as sensitive/encrypted where Vercel offers that option. Braintree production mode is deliberately rejected by this demo. PayPal REST remains optional and still requires separate PayPal Sandbox Client ID and Secret credentials.
+
+After saving the variables, redeploy the Production environment so the running deployment receives them. Then verify:
+
+1. Open `/api/demo/status` and confirm the server reports the expected provider configuration without exposing secret values.
+2. Run the AI provider check through `POST /api/vibe-ai` with a sample prompt.
+3. Create a fixed USD $1 PayPal Sandbox order through `POST /api/paypal/sandbox/order`, approve it with a Sandbox buyer, and verify the returned order status through the app.
+4. Record the deployment URL, timestamp, provider, HTTP status, and sanitized response as judging evidence. Never record credentials or tokens.
+
+Until those hosted checks pass, mark live provider verification **not yet verified**. Local mocked tests and a READY Vercel deployment do not prove that external credentials or provider calls work.
+
+## Judge walkthrough
+
+| Step | Open | Try |
 | --- | --- | --- |
-| `command not found: npm` | Package manager not installed | Install npm first, then re-run install |
-| `EACCES` permission errors during install | Global installs without permissions | Prefer npm local scripts; avoid global installs |
-| `Missing environment variable` at startup | `.env` not created | Copy `.env.example` to `.env` and fill the required keys (see table above) |
-| CI fails on your PR but passes locally | Environment drift | Reproduce with the CI workflow's Node/version pins from `.github/workflows/` |
-| Port already in use | Dev server collision | Stop the stale process or run on an alternate port |
+| Vibe It | [Home](http://localhost:3000/) | Submit “I feel bullish on AI” with **From prompt** selected. The Bold sample allocates 30% US equities, 30% Indian equities, and 40% crypto. Try Safe or Balanced to compare. |
+| Backtest Lab | [Web App](http://localhost:3000/webapp/) | Run the prefilled BTC-USDT 20/50 moving-average example. The fixture shows Sharpe 1.72, max drawdown −11.2%, a 57% win rate, and a sample equity curve. |
+| Guarded paper trading | [Web App](http://localhost:3000/webapp/#paper-heading) | Inspect the signed mandate, submit a small order, request approval for a larger order, approve the exact payload, and test the kill switch. |
+| Wallet and SIP | [Mobile](http://localhost:3000/mobile/) | View the $1,084.22 sample wallet and simulate a ₹500 monthly UPI AutoPay contribution. |
 
-## Environment Variables
+For the optional browser companion, open `chrome://extensions` or `edge://extensions`, enable Developer mode, and load the `extension/` folder unpacked. The popup links to the local demo. It requests no browser permissions.
 
-Parsed from the repository's `.env.example` — required vs optional:
+## Implementation
 
-| Variable | Description | Requirement |
-| --- | --- | --- |
-| `BRAINTREE_ENV` | Braintree is the primary checkout demo and is Sandbox-only. | ⚙️ optional |
-| `BRAINTREE_MERCHANT_ID` | Braintree is the primary checkout demo and is Sandbox-only. | ⚙️ optional |
-| `BRAINTREE_PUBLIC_KEY` | Braintree is the primary checkout demo and is Sandbox-only. | ✅ required |
-| `BRAINTREE_PRIVATE_KEY` | Braintree is the primary checkout demo and is Sandbox-only. | ✅ required |
-| `PAYPAL_CLIENT_ID` | Braintree is the primary checkout demo and is Sandbox-only. | ⚙️ optional |
-| `PAYPAL_CLIENT_SECRET` | Braintree is the primary checkout demo and is Sandbox-only. | ✅ required |
-| `GEMINI_API_KEY` | Choose one AI provider. Gemini takes priority if both keys are set. | ✅ required |
-| `OPENAI_API_KEY` | Choose one AI provider. Gemini takes priority if both keys are set. | ✅ required |
-| `AI_API_KEY` | Optional custom OpenAI-compatible provider. | ✅ required |
-| `AI_BASE_URL` | Optional custom OpenAI-compatible provider. | ⚙️ optional |
-| `AI_MODEL` | Optional custom OpenAI-compatible provider. | ⚙️ optional |
-| `APP_URL` | Optional origin for sandbox return links. Local runs default to localhost:3000. | ⚙️ optional |
+The demo uses HTML, CSS, JavaScript, and Node.js with Express. Vibe It uses the selected mode, a configured AI classifier, or keyword rules when the model is unavailable. The Chat Agent extracts a supported pair and moving-average window from the prompt and displays deterministic backtest fixtures. The server serves the overview, web app, mobile view, and [JSON API](docs/API.md) from one origin. The paper ledger, signed mandate, approval queue, and audit chain are process-local and reset when the server restarts.
 
-## Project Structure
-
-```text
-PayPal-Vibe-Trading-One-App-All-Trades/
-├── LICENSE/
-├── docs/
-├── extension/
-├── gifs/
-├── public/
-├── scripts/
-├── server/
-├── test/
-├── .env.example
-├── .github/workflows
-├── .gitignore
-├── README.md
-├── app.js
-├── index.html
-├── make_gifs.py
-├── package-lock.json
-├── package.json
-└── vercel.json
+```sh
+npm test
 ```
 
-## Testing & Continuous Integration
+The test suite checks served pages, AI/portfolio behavior, backtest fixtures, guarded paper fills, position accounting, simulated fees, Ed25519 mandate verification, prompt-injection denial, exact-payload approval, owner kill switch, audit-chain integrity, PayPal/Braintree mocked boundaries, SIP simulation, and invalid request handling. The [hackathon release](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/releases/tag/v1.0-hackathon) preserves the original packaged submission build. See [Judge Readiness](docs/JUDGING.md), the [three-minute demo script](docs/DEMO-SCRIPT.md), and [API reference](docs/API.md) for verification steps.
 
-The repository ships a test suite runnable with `npm run test` (manifest script: `node --test`). Run it before every contribution:
+## AgentPaL Guard — signed, risk-bounded paper execution
 
-**Continuous Integration.** 2 GitHub Actions workflows are configured under `.github/workflows/`:
+The strongest reusable part of the previous [AgentPaL repository](https://github.com/CodesbyFebin/PayPal-Vibe) is its trust model: **the AI may propose; deterministic policy decides; the owner approves; the execution boundary verifies**. This repository now adapts that pattern to paper trading instead of copying AgentPaL's Next.js finance engine into an incompatible Express application.
 
-- `checks.yml`
-- `pages.yml`
+- **Ed25519-signed mandate:** a process-local paper-only mandate defines allowed symbols/actions, automatic-approval notional, hard per-order cap, daily cap, and expiry. The server verifies the signature before each policy decision.
+- **Deterministic Guard:** kill switch, mandate integrity/expiry, symbol/action allowlists, finite positive quantity and price, prompt-injection pattern screening for untrusted context, per-order cap, daily cap, and owner approval threshold.
+- **Exact-payload approvals:** larger orders return `202 REQUIRE_APPROVAL`; the owner authenticates with a server-side PIN and approves a SHA-256 hash of the exact trade payload. A changed or already-consumed approval cannot authorize another payload.
+- **Emergency freeze:** owner-authenticated kill switch blocks all paper execution.
+- **Tamper-evident journal:** each decision, approval, freeze transition, and paper fill is linked into a SHA-256 hash chain. The status endpoint verifies the chain.
+- **Paper ledger:** BUY/SELL update cash and per-symbol positions, enforce sell inventory and available cash, mark positions to the fixed reference fixtures, and charge a clearly disclosed 10 bps simulated fee.
 
-Every push to `main` and every pull request is exercised by this pipeline, so the README you are reading describes behavior that CI actively protects.
+The UI exposes the Guard status, pending approvals, signature validity, daily notional, audit-chain status, and owner controls. Set `OWNER_PIN` to a private value of at least 12 characters in the server environment to enable approvals and kill-switch controls. The PIN is read from the `x-owner-pin` request header and is never shipped to the browser or stored by the page.
 
-## Security
+**Strict scope:** this is paper-only execution. It has no broker adapter, exchange API keys, live market feed, real order routing, or real-money trading. BTC-USDT and ETH-USDT prices are fixed fixtures. The mandate, approvals, paper ledger, and audit journal are in-memory and reset on process restart. The signature and hash chain are real cryptographic checks, but this is not durable production custody or an independently anchored audit log.
 
-_MISSING: no SECURITY.md detected. Before launch, maintainers should publish a disclosure policy (contact channel, response timeline, safe-harbor statement)._
+## Braintree Sandbox checkout (primary payment demo)
 
-Secrets are kept out of source control: a documented `.env.example` declares every variable the app reads, without shipping real values.
+The checkout uses the official Braintree Node SDK and Braintree Drop-in UI (Drop-in Web 1.46.0). The browser collects payment details through Braintree-hosted Drop-in; this app receives only a tokenized payment-method nonce. The Drop-in also offers its PayPal wallet option when that feature is enabled for the Braintree Sandbox merchant. The server creates a Braintree client token and submits a fixed **USD $1.00 Sandbox transaction** for settlement. No card number, CVV, or expiry is accepted by this app's API.
 
-## Repository Statistics
+1. Copy `.env.example` to `.env`.
+2. Set `BRAINTREE_ENV=sandbox`, `BRAINTREE_MERCHANT_ID`, `BRAINTREE_PUBLIC_KEY`, and `BRAINTREE_PRIVATE_KEY` using the credentials from your Braintree Sandbox Control Panel.
+3. Start with `npm ci && npm run dev`.
+4. Open the home page, wait for the Braintree Drop-in form to initialize, and submit a Sandbox test payment method.
+5. The app returns only the transaction ID, status, amount, currency, and type. Confirm the same transaction in the Braintree Sandbox Control Panel.
 
-Live numbers pulled at generation time — regenerate this README to refresh them:
+API:
+- `POST /api/braintree/client-token` — returns a short-lived Braintree client token when Sandbox credentials are configured.
+- `POST /api/braintree/checkout` — accepts `paymentMethodNonce` and optional `deviceData`; the amount is server-fixed at USD $1.00 and cannot be supplied by the browser.
+- `GET /api/demo/status` — reports whether Braintree Sandbox credentials are present without exposing them.
 
-| Metric | Value |
-| --- | --- |
-| ⭐ Stars | 0 |
-| 🍴 Forks | 0 |
-| 📝 Commits (main) | 14 |
-| 🏷️ Releases | 1 |
-| 👥 Contributors (sampled) | 1 |
-| 🔀 CI workflows | 2 |
-| 🧪 Tests | detected |
-| 📄 License | MIT |
+The service is fail-closed: `BRAINTREE_ENV=production` is not supported. The checkout is a Sandbox-only test and does not move real money. Automated tests mock the SDK boundary; a real provider transaction remains **not yet verified** until a credentialed Sandbox run is observed in the Braintree Control Panel.
 
-## Commit Intelligence
+## PayPal Sandbox and AI setup
 
-Semantic breakdown of the 14 most recent commits (Conventional Commit ratios are a proxy for engineering hygiene):
+The PayPal Orders flow and OpenAI-compatible Chat Completions client are adapted from [PayPal-Vibe](https://github.com/CodesbyFebin/PayPal-Vibe/tree/e32bb2f5b9d81bed5111c1d6fb482848109b1780).
 
-| Type | Count | Share |
-| --- | --- | --- |
-| other | 11 | 79% |
-| feat | 2 | 14% |
-| docs | 1 | 7% |
+1. Copy `.env.example` to `.env`. Set `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` from a PayPal **Sandbox** application and set either `GEMINI_API_KEY` or `OPENAI_API_KEY`. For a custom OpenAI-compatible provider, use `AI_API_KEY`, `AI_BASE_URL`, and `AI_MODEL`. If both named keys are configured, Gemini takes priority. Keep credentials server-side.
+2. Run `npm ci`, then `node --env-file=.env server/index.js`. On a hosted instance, set `APP_URL` to the application's HTTPS origin and supply credentials through the host's environment settings.
+3. Open [Vibe It](http://localhost:3000/), keep **From prompt** selected, and preview a portfolio. **AI-selected mode** means the configured model returned a recognized mode. **Rule-based demo mode** means the fallback supplied it.
+4. Use the Braintree Sandbox checkout on the home page. The separate PayPal REST Sandbox flow remains optional. The server creates a fixed USD $1 order against the Sandbox Orders API. Open PayPal Sandbox using a sandbox buyer account. On return, the app verifies the signed checkout state and reads the matching order status from PayPal. The app never authorizes or captures the order.
 
-Most active contributors (by recent commit authorship):
+For direct live verification after loading the private `.env`:
 
-| Contributor | Recent commits |
-| --- | --- |
-| [@unknown](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commits?author=unknown) | 14 |
+```sh
+curl -fsS http://localhost:3000/api/health
+curl -fsS http://localhost:3000/api/paypal/create-order \
+  -H 'Content-Type: application/json' -d '{"amount":"1.00"}'
+curl -fsS http://localhost:3000/api/vibe-ai \
+  -H 'Content-Type: application/json' -d '{"feeling":"I feel bullish on AI"}'
+```
 
-## Why this repo?
+The order endpoint returns the status supplied by PayPal and an approval URL. The AI verification endpoint reports the provider and fails if the model is unavailable.
 
-The comparison a skeptical reader actually cares about — this project versus rolling it yourself:
+Automated tests exercise the app with simulated upstream responses and check the exact sandbox host, order amount, and AI output handling. Live provider requests require configured credentials. No production PayPal endpoint is used.
 
-| Dimension | What PayPal-Vibe-Trading-One-App-All-Trades gives you |
-| --- | --- |
-| **Setup time** | One clone + one install — prerequisites are declared in the manifest and a documented `.env.example` |
-| **Trust** | 10 claims independently verified against commits and files — see the Proof Ledger |
-| **Transparency** | Development happens in the open: 14+ commits, semantic messages, public CI (2 workflows) |
-| **Community** | 0 stars and 0 forks show sustained adoption; issues and PRs are open |
+## Demo boundaries
 
-### Feature deep-dive
-
-#### Express integration
-
-PayPal-Vibe-Trading-One-App-All-Trades ships with Express wired into its npm toolchain, detected from its dependency manifests.
-
-#### Continuous Integration
-
-Automated CI pipeline with 2 GitHub Actions workflows (checks.yml, pages.yml).
-
-#### Automated tests
-
-The repository contains a test suite and/or test scripts runnable from its package manifests.
-
-## Deployment
-
-Platform configuration was detected in the repository (Vercel) — deploys are wired for this stack.
-
-
-## Design Notes
-
-Observations read directly from the repository's shape — useful context for new contributors:
-
-- **CI-guarded** — 2 workflow(s) protect the default branch; match their Node/tool versions locally to avoid drift.
-- **Tests as documentation** — the test suite is the most reliable, always-current description of intended behavior; read tests before reading implementation.
-
-## Support & Community
-
-- 🐛 **Bug reports:** [open an issue](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/issues/new) — include repro steps and versions
-- 💡 **Feature ideas:** [start a discussion or issue](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/issues) with the problem you are solving
-- 🔀 **Code:** fork → branch → PR (see Contributing below)
-- 🚀 **Showcase:** the project is live at [paypal-vibe-trading.vercel.app](https://paypal-vibe-trading.vercel.app)
-
-If PayPal-Vibe-Trading-One-App-All-Trades saves you time, starring the repository is the cheapest way to say thanks and help others discover it.
-
-## Recent Development History
-
-The 14 most recent commits on `main` — the actual development pulse this README was forged from:
-
-| Commit | Type | Message | Author | Date |
-| --- | --- | --- | --- | --- |
-| [`e421ff7`](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/e421ff7554061c455369bdb57e0d824b0e1f4039) | feat | feat: reuse AgentPaL Braintree Drop-in improvements | unknown | 2026-11-12 |
-| [`eb1f705`](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/eb1f7054049569b8574d0df230f110a8ab8e4548) | feat | feat: add Braintree Sandbox checkout | unknown | 2026-11-12 |
-| [`bb14d27`](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/bb14d275f7e89259d5a7fd9cbd41933af22dd631) | docs | docs: clarify Vercel production provider verification | unknown | 2026-11-12 |
-| [`3d67435`](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/3d67435cb87314d788f62c602ce6b93e97ad38aa) | other | Improve the judge walkthrough and verify PayPal Sandbox returns | unknown | 2026-11-12 |
-| [`da9b6d4`](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/da9b6d4a2a2da3ef52735a038ca531245602b690) | other | Publish the landing page and prepare the hosted web app | unknown | 2026-11-12 |
-| [`d603d1d`](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/d603d1d185623e77058789980917de1fb2500bed) | other | Add direct PayPal Sandbox and Gemini/OpenAI verification routes | unknown | 2026-11-12 |
-| [`449cff1`](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/449cff1f560f4bdf077ef831c4255330f278cf5d) | other | Port PayPal Sandbox and AI integration from PayPal-Vibe | unknown | 2026-11-12 |
-| [`8c7c8ca`](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/8c7c8cae2b236ae218eedede748151c1899a0c7f) | other | Prepare PayPal Vibe Trading for hackathon judging | unknown | 2026-11-12 |
-| [`f823e43`](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/f823e437f7164d9a67ef06816b6afeb26e7fe711) | other | Add package-lock + full stack | unknown | 2026-11-12 |
-| [`328b0bb`](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/328b0bb6ed54503576a60556c51edbd6859c9a89) | other | Full stack pack - server + public + webapp + docs | unknown | 2026-11-12 |
-| [`65c541b`](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/65c541bdf3fd51426d252639f23fd0198fe57bcc) | other | Add 5 Vibe GIFs - mascot abstract storyboard promo slow loop | unknown | 2026-11-12 |
-| [`966fec2`](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/966fec2eaa340fc976ff3377828a5990787cfaed) | other | Add full WebApp Backtest Lab + Landing + Mobile | unknown | 2026-11-12 |
-| [`7853d71`](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/7853d717c91eb84d98094cc9b5a5b7ce8140ea13) | other | Add full ecosystem - landing webapp mobile extension docs | unknown | 2026-11-12 |
-| [`4d58128`](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/4d581281ebf0b9e93995eed6e1180adb93091f46) | other | PayPal Vibe Trading - One App. All Trades. | unknown | 2026-11-12 |
-
-## Citable Facts (GEO)
-
-Structured, quotable facts for answer engines and AI assistants — each with its primary source:
-
-| Fact | Value | Source |
-| --- | --- | --- |
-| What it is | Contribute to CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades development by creating  | repo About |
-| Primary language | JavaScript (100% of detected code) | manifest + language detection |
-| Framework(s) | Express | package manifest |
-| License | MIT License | LICENSE |
-| Development activity | 14 commits on main | commit history |
-| Community adoption | 0 stars, 0 forks | live GitHub metadata |
-| Automation | 2 CI workflows | .github/workflows |
-| Getting started | clone, npm install, run dev | Quick Start |
-
-## Proof Ledger
-
-> Every claim below is cross-referenced against the live repository. **If it is not in the ledger, it is not in this README.**
-
-| Claim | Status | Confidence | Evidence |
-| --- | --- | --- | --- |
-| Primary language is JavaScript | ✅ VERIFIED | 0.85 | [stack detection · javascript](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/e421ff7554061c455369bdb57e0d824b0e1f4039) |
-| Hosted at github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades with 0 stars and 0 forks | ✅ VERIFIED | 0.99 | GitHub live metadata · 0 stars |
-| 14+ commits on branch main | ✅ VERIFIED | 0.90 | [14 commits on main (live history)](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/e421ff7554061c455369bdb57e0d824b0e1f4039) |
-| Distributed under the MIT License | ✅ VERIFIED | 0.90 | [LICENSE](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/e421ff7554061c455369bdb57e0d824b0e1f4039) |
-| CI pipeline with 2 GitHub Actions workflows | ✅ VERIFIED | 0.90 | [.github/workflows (2 workflows)](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/e421ff7554061c455369bdb57e0d824b0e1f4039) |
-| Includes automated tests | ✅ VERIFIED | 0.90 | [test](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/e421ff7554061c455369bdb57e0d824b0e1f4039) |
-| Built with Express | ✅ VERIFIED | 0.95 | [package.json · express@^4.18.2](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/e421ff7554061c455369bdb57e0d824b0e1f4039) |
-| Written primarily in JavaScript | ✅ VERIFIED | 0.85 | [stack detection · javascript](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/e421ff7554061c455369bdb57e0d824b0e1f4039) |
-| Released under the MIT license | ✅ VERIFIED | 0.90 | [LICENSE](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/e421ff7554061c455369bdb57e0d824b0e1f4039) |
-| CI via GitHub Actions (2 workflows) | ✅ VERIFIED | 0.90 | [.github/workflows (2 workflows)](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/commit/e421ff7554061c455369bdb57e0d824b0e1f4039) |
-
-<details><summary><strong>Rejected claims (audit trail)</strong></summary>
-
-_None — every candidate claim survived verification._
-
-</details>
-
-## Roadmap
-
-- [ ] Continue the line of work started in "feat: reuse AgentPaL Braintree Drop-in improvements" (e421ff7)
-- [ ] Continue the line of work started in "feat: add Braintree Sandbox checkout" (eb1f705)
-
-## FAQ
-
-<details><summary><strong>What is PayPal-Vibe-Trading-One-App-All-Trades?</strong></summary>
-
-PayPal-Vibe-Trading-One-App-All-Trades is an open-source JavaScript project: Contribute to CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades development by creating an account on GitHub.. It is developed in the open at github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades.
-
-</details>
-
-<details><summary><strong>How do you run PayPal-Vibe-Trading-One-App-All-Trades?</strong></summary>
-
-Install dependencies with npm install, then run `npm run dev`. The full quick-start is in the generated README.
-
-</details>
-
-<details><summary><strong>Is PayPal-Vibe-Trading-One-App-All-Trades free?</strong></summary>
-
-Yes — PayPal-Vibe-Trading-One-App-All-Trades is released under the MIT License, so it is free to use, modify and distribute under that license's terms.
-
-</details>
-
-<details><summary><strong>How can I contribute to PayPal-Vibe-Trading-One-App-All-Trades?</strong></summary>
-
-Fork the repo, branch with a semantic prefix (feat/, fix/), and open a pull request. CI runs 2 automated workflows on every PR, so you get feedback before a human review.
-
-</details>
-
-<details><summary><strong>Can I trust the numbers in this README?</strong></summary>
-
-Yes — this README was forged by ShipOS with a Zero-Trust Provenance audit: 10 claims are VERIFIED with commit/file evidence, and 0 unbacked candidate claims were rejected and never rendered. See the Proof Ledger.
-
-</details>
-
-## Contributing
-
-Contributions are welcome! The standard flow:
-
-1. Fork the repository
-2. Create your branch: `git checkout -b feat/your-feature` (Conventional Commits: 3/14 recent commits follow the convention)
-3. Commit with semantic messages (`feat:`, `fix:`, `docs:`)
-4. Open a Pull Request at https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/compare
-
-## License
-
-Released under the **MIT License** — see `LICENSE`.
-
-## Changelog
-
-### Unreleased
-
-**Features**
-
-- feat: reuse AgentPaL Braintree Drop-in improvements (`e421ff7`)
-- feat: add Braintree Sandbox checkout (`eb1f705`)
-
-**Documentation**
-
-- docs: clarify Vercel production provider verification (`bb14d27`)
-
-## Acknowledgments
-
-Built by **unknown** (14 commits) — with 2 feat, 1 docs, 11 other commits in recent history.
-
-## Star History & CTA
-
-⭐ **Star this repo** if PayPal-Vibe-Trading-One-App-All-Trades saves you time — it is the cheapest way to fund open source.
-
-<div align="center">
-
-[![Star History Chart](https://api.star-history.com/svg?repos=CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades&type=Date)](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/stargazers)
-
-**[⭐ Star](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades) · [🍴 Fork](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/fork) · [🐛 Report Issue](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/issues) · [🔀 Contribute](https://github.com/CodesbyFebin/PayPal-Vibe-Trading-One-App-All-Trades/pulls)**
-
-</div>
+PayPal Vibe Trading is an independent hackathon concept. Market data, backtests, balances, fills, and AutoPay approvals are illustrative. The optional PayPal connection creates Sandbox preview orders only. The demo uses no broker or live market feed and provides no real Buyer Protection coverage or financial advice.

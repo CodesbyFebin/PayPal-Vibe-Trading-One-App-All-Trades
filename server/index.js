@@ -1,7 +1,7 @@
 const express = require('express');
-const cors = require('cors');
 const path = require('node:path');
 const { createIntegrations } = require('./integrations');
+const { createTradingGuard } = require('./guard');
 
 const root = path.join(__dirname, '..');
 const allocations = {
@@ -38,8 +38,12 @@ function requestBudget(max) {
   };
 }
 
-function createApp({ integrations = createIntegrations(), app = express() } = {}) {
-  let paperNavCents = 108422;
+function createApp({ integrations = createIntegrations(), app = express(), ownerPin = process.env.OWNER_PIN } = {}) {
+  const guard = createTradingGuard({ ownerPin });
+  const paperAccount = { cashCents: 1_000_000, positions: Object.create(null) };
+  const paperPrices = { 'BTC-USDT': 97240, 'ETH-USDT': 3450 }; // Fixed fixtures; no live market feed.
+  const allowGuardControl = requestBudget(12);
+  const allowPaperTrade = requestBudget(30);
   const allowAi = requestBudget(12);
   const allowOrder = requestBudget(6);
   const allowVerification = requestBudget(12);
@@ -54,7 +58,7 @@ function createApp({ integrations = createIntegrations(), app = express() } = {}
     next();
   });
 
-  app.use('/api', cors(), express.json({ limit: '16kb' }));
+  app.use('/api', express.json({ limit: '16kb' }));
   app.post('/api/*', (req, res, next) => {
     if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
       return res.status(400).json({ error: 'Send a JSON object.' });
@@ -211,16 +215,81 @@ function createApp({ integrations = createIntegrations(), app = express() } = {}
     });
   });
 
+  app.get('/api/guard/status', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json(guard.getStatus());
+  });
+
+  app.post('/api/guard/approve', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    if (!allowGuardControl()) return res.status(429).json({ error: 'Owner control is busy. Try again in a minute.' });
+    const result = guard.approve({
+      approvalId: req.body.approvalId,
+      payloadHash: req.body.payloadHash,
+    }, req.get('x-owner-pin'));
+    if (!result.ok) return res.status(result.status).json({ error: result.error });
+    res.json(result);
+  });
+
+  app.post('/api/guard/kill-switch', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    if (!allowGuardControl()) return res.status(429).json({ error: 'Owner control is busy. Try again in a minute.' });
+    const result = guard.setKillSwitch(req.body.enabled, req.get('x-owner-pin'));
+    if (!result.ok) return res.status(result.status).json({ error: result.error });
+    res.json(result);
+  });
+
   app.post('/api/paper', (req, res) => {
-    const symbol = textField(req.body.symbol, 'BTC-USDT', 32);
+    if (!allowPaperTrade()) return res.status(429).json({ error: 'Paper trading is busy. Try again in a minute.' });
+    const symbol = textField(req.body.symbol, 'BTC-USDT', 32)?.toUpperCase();
     const action = textField(req.body.action, 'BUY', 4)?.toUpperCase();
     const qty = positiveNumber(req.body.qty, 0.01);
-    if (!symbol || !['BUY', 'SELL'].includes(action) || qty === null) {
-      return res.status(400).json({ error: 'Enter a symbol, BUY or SELL, and a positive quantity.' });
+    const context = textField(req.body.context, '', 500);
+    const approvalId = textField(req.body.approvalId, '', 64);
+    if (!symbol || !['BUY', 'SELL'].includes(action) || qty === null || context === null) {
+      return res.status(400).json({ error: 'Enter an allowed symbol, BUY or SELL, and a positive quantity.' });
     }
 
-    paperNavCents += 1218;
-    res.json({ fill: { action, symbol, qty, price: 97240 }, nav: paperNavCents / 100 });
+    const price = paperPrices[symbol];
+    const decision = guard.evaluate({ action, symbol, qty, price, context, ...(approvalId ? { approvalId } : {}) });
+    if (decision.decision === 'DENY') {
+      return res.status(403).json({ error: 'Trading Guard denied this paper trade.', guard: decision });
+    }
+    if (decision.decision === 'REQUIRE_APPROVAL') {
+      return res.status(202).json({ message: 'Owner approval is required before this paper trade can execute.', guard: decision });
+    }
+
+    const notional = Number((qty * price).toFixed(2));
+    const fee = Number((notional * 0.001).toFixed(2));
+    const currentQty = paperAccount.positions[symbol] || 0;
+    if (action === 'BUY') {
+      const costCents = Math.round((notional + fee) * 100);
+      if (costCents > paperAccount.cashCents) {
+        return res.status(409).json({ error: 'Insufficient paper cash for this order including the simulated fee.' });
+      }
+      paperAccount.cashCents -= costCents;
+      paperAccount.positions[symbol] = Number((currentQty + qty).toFixed(8));
+    } else {
+      if (currentQty + 1e-10 < qty) {
+        return res.status(409).json({ error: 'Insufficient paper position to sell this quantity.' });
+      }
+      const proceedsCents = Math.round((notional - fee) * 100);
+      paperAccount.cashCents += proceedsCents;
+      paperAccount.positions[symbol] = Number(Math.max(0, currentQty - qty).toFixed(8));
+    }
+
+    const positionValue = Object.entries(paperAccount.positions).reduce((total, [asset, amount]) => {
+      return total + amount * (paperPrices[asset] || 0);
+    }, 0);
+    const nav = Number((paperAccount.cashCents / 100 + positionValue).toFixed(2));
+    guard.recordFill({ action, symbol, qty, notional });
+    res.json({
+      fill: { action, symbol, qty, price, notional, fee, feeRateBps: 10, priceSource: 'fixed-demo-fixture' },
+      account: { cash: Number((paperAccount.cashCents / 100).toFixed(2)), positions: paperAccount.positions, nav },
+      nav,
+      guard: { decision: 'ALLOW', reasons: decision.reasons },
+      disclaimer: 'Paper-only execution with a fixed demo price; not a live market order.',
+    });
   });
 
   app.post('/api/sip', (req, res) => {
