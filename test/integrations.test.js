@@ -30,7 +30,7 @@ test('Vibe It uses a configured model only for opt-in prompts without a manual m
       assert.equal(body.model, 'test-model');
       assert.equal(body.messages.at(-1).content, 'I feel curious');
       assert.equal(options.headers.Authorization, 'Bearer test-ai-key');
-      return Response.json({ choices: [{ message: { content: '{"mode":"Safe"}' } }] });
+      return Response.json({ choices: [{ message: { content: '{"mode":"Safe","reason":"The prompt expresses caution."}' } }] });
     },
   });
   await withApp(integrations, async post => {
@@ -102,5 +102,70 @@ test('checkout rejects a non-sandbox approval URL without exposing provider data
     const response = await post('paypal/sandbox/order', {});
     assert.equal(response.status, 502);
     assert.deepEqual(await response.json(), { error: 'PayPal Sandbox could not create the preview order.' });
+  });
+});
+
+test('strict AI route prefers Gemini and returns a reason from the provider', async () => {
+  const integrations = createIntegrations({
+    env: { GEMINI_API_KEY: 'test-gemini', OPENAI_API_KEY: 'test-openai' },
+    request: async (url, options) => {
+      assert.equal(url, 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions');
+      assert.equal(options.headers.Authorization, 'Bearer test-gemini');
+      assert.equal(JSON.parse(options.body).messages.at(-1).content, 'I feel bullish on AI');
+      return Response.json({ choices: [{ message: { content: '{"mode":"Bold","reason":"The prompt expresses bullish sentiment."}' } }] });
+    },
+  });
+  await withApp(integrations, async post => {
+    const response = await post('vibe-ai', {});
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), {
+      feeling: 'I feel bullish on AI',
+      mode: 'Bold',
+      reason: 'The prompt expresses bullish sentiment.',
+      provider: 'gemini',
+      source: 'ai',
+      portfolio: { US: 30, NSE: 30, Crypto: 40, PYUSD: 0 },
+    });
+  });
+});
+
+test('strict AI verification reports missing and failing providers', async () => {
+  await withApp(createIntegrations({ env: {} }), async post => {
+    const response = await post('vibe-ai', {});
+    assert.equal(response.status, 503);
+  });
+  const integrations = createIntegrations({
+    env: { OPENAI_API_KEY: 'test-openai', AI_BASE_URL: 'https://unused.example/v1' },
+    request: async (url, options) => {
+      assert.equal(url, 'https://api.openai.com/v1/chat/completions');
+      assert.equal(options.headers.Authorization, 'Bearer test-openai');
+      return Response.json({}, { status: 403 });
+    },
+  });
+  await withApp(integrations, async post => {
+    assert.equal((await post('vibe-ai', {})).status, 502);
+  });
+});
+
+test('PayPal verification route forwards the real provider status and enforces the fixed amount', async () => {
+  let requests = 0;
+  const integrations = createIntegrations({
+    env: { PAYPAL_CLIENT_ID: 'test-id', PAYPAL_CLIENT_SECRET: 'test-secret' },
+    request: async url => {
+      requests++;
+      return Response.json(url.endsWith('/token')
+        ? { access_token: 'test-token' }
+        : { id: 'TEST-ORDER', status: 'PAYER_ACTION_REQUIRED', links: [{ rel: 'payer-action', href: 'https://www.sandbox.paypal.com/checkoutnow?token=TEST-ORDER' }] });
+    },
+  });
+  await withApp(integrations, async post => {
+    assert.equal((await post('paypal/create-order', { amount: '5.00' })).status, 400);
+    assert.equal(requests, 0);
+    const response = await post('paypal/create-order', { amount: '1.00' });
+    assert.equal(response.status, 201);
+    assert.deepEqual(await response.json(), {
+      id: 'TEST-ORDER', status: 'PAYER_ACTION_REQUIRED', mode: 'sandbox',
+      approvalUrl: 'https://www.sandbox.paypal.com/checkoutnow?token=TEST-ORDER',
+    });
   });
 });

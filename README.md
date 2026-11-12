@@ -38,10 +38,22 @@ The test suite checks the served pages, portfolio choices, backtest values, pape
 
 The PayPal Orders flow and OpenAI-compatible Chat Completions client are adapted from [PayPal-Vibe](https://github.com/CodesbyFebin/PayPal-Vibe/tree/e32bb2f5b9d81bed5111c1d6fb482848109b1780).
 
-1. Copy `.env.example` to `.env`. Set `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` from a PayPal **Sandbox** application and `AI_API_KEY` from the model provider. For a different OpenAI-compatible provider, set `AI_BASE_URL` and `AI_MODEL` as well. Keep credentials server-side.
+1. Copy `.env.example` to `.env`. Set `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` from a PayPal **Sandbox** application and set either `GEMINI_API_KEY` or `OPENAI_API_KEY`. For a custom OpenAI-compatible provider, use `AI_API_KEY`, `AI_BASE_URL`, and `AI_MODEL`. If both named keys are configured, Gemini takes priority. Keep credentials server-side.
 2. Run `npm ci`, then `node --env-file=.env server/index.js`. On a hosted instance, set `APP_URL` to the application's HTTPS origin and supply credentials through the host's environment settings.
 3. Open [Vibe It](http://localhost:3000/), keep **From prompt** selected, and preview a portfolio. **AI-selected mode** means the configured model returned a recognized mode. **Rule-based demo mode** means the fallback supplied it.
 4. Choose **Try the $1 PayPal Sandbox checkout**, then **Create sandbox order**. The server creates a fixed USD $1 order against the Sandbox Orders API. Use **Open PayPal Sandbox** to preview the buyer approval screen with a sandbox buyer account. This app does not authorize or capture the order.
+
+For direct live verification after loading the private `.env`:
+
+```sh
+curl -fsS http://localhost:3000/api/health
+curl -fsS http://localhost:3000/api/paypal/create-order \
+  -H 'Content-Type: application/json' -d '{"amount":"1.00"}'
+curl -fsS http://localhost:3000/api/vibe-ai \
+  -H 'Content-Type: application/json' -d '{"feeling":"I feel bullish on AI"}'
+```
+
+The order endpoint returns the status supplied by PayPal and an approval URL. The AI verification endpoint reports the provider and fails if the model is unavailable.
 
 Automated tests exercise the app with simulated upstream responses and check the exact sandbox host, order amount, and AI output handling. Live provider requests require configured credentials. No production PayPal endpoint is used.
 

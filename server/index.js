@@ -80,20 +80,39 @@ function createApp({ integrations = createIntegrations() } = {}) {
     }
 
     let source = 'rules';
+    let classification;
     const wantsAi = req.body.useAI === true && selectedMode === undefined;
     if (wantsAi && integrations.aiConfigured && allowAi()) {
       try {
-        mode = await integrations.classifyVibe(feeling);
+        classification = await integrations.classifyVibe(feeling);
+        mode = classification.mode;
         source = 'ai';
       } catch {
         // The existing rules remain available when the provider is unavailable.
       }
     }
-    res.json({ feeling, mode, portfolio: allocations[mode], ...(wantsAi ? { source } : {}) });
+    res.json({ feeling, mode, portfolio: allocations[mode], ...(wantsAi ? { source } : {}), ...(classification ? { reason: classification.reason, provider: classification.provider } : {}) });
   });
 
-  app.post('/api/paypal/sandbox/order', async (req, res) => {
+  app.post('/api/vibe-ai', async (req, res) => {
+    const feeling = textField(req.body.feeling, 'I feel bullish on AI', 240);
+    if (feeling === null) return res.status(400).json({ error: 'Feeling must be text up to 240 characters.' });
+    if (!integrations.aiConfigured) return res.status(503).json({ error: 'AI credentials are not configured.' });
+    if (!allowAi()) return res.status(429).json({ error: 'The AI demo is busy. Try again in a minute.' });
+    try {
+      const classification = await integrations.classifyVibe(feeling);
+      res.json({ feeling, ...classification, source: 'ai', portfolio: allocations[classification.mode] });
+    } catch {
+      res.status(502).json({ error: 'The AI provider could not classify this prompt.' });
+    }
+  });
+
+  app.post(['/api/paypal/sandbox/order', '/api/paypal/create-order'], async (req, res) => {
     res.set('Cache-Control', 'no-store');
+    const alias = req.path === '/api/paypal/create-order';
+    if (alias && req.body.amount !== undefined && ![1, '1', '1.0', '1.00'].includes(req.body.amount)) {
+      return res.status(400).json({ error: 'The sandbox preview amount is fixed at USD $1.00.' });
+    }
     if (!integrations.paypalConfigured) {
       return res.status(503).json({ error: 'PayPal Sandbox credentials are not configured.' });
     }
@@ -101,8 +120,8 @@ function createApp({ integrations = createIntegrations() } = {}) {
       return res.status(429).json({ error: 'The sandbox demo is busy. Try again in a minute.' });
     }
     try {
-      const order = await integrations.createSandboxOrder();
-      res.status(201).json(order);
+      const { mode, orderId, approvalUrl, status } = await integrations.createSandboxOrder();
+      res.status(201).json(alias ? { id: orderId, status, mode, approvalUrl } : { mode, orderId, approvalUrl });
     } catch {
       res.status(502).json({ error: 'PayPal Sandbox could not create the preview order.' });
     }
